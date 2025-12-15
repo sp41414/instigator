@@ -3,7 +3,8 @@ import express from "express"
 import cors from "cors"
 import helmet from "helmet"
 import cookieParser from "cookie-parser"
-import { Request, Response, NextFunction } from "express"
+import { Response } from "express"
+import passport from "./config/passport"
 
 const app = express()
 
@@ -13,7 +14,8 @@ app.use(cors({
 }))
 app.use(helmet())
 app.use(cookieParser())
-app.use((err, req: Request, res: Response, next: NextFunction) => {
+app.use(passport.initialize())
+app.use((err, req, res: Response, next) => {
     console.error(err.stack)
     res.status(500).json({
         success: false,
@@ -25,7 +27,7 @@ app.use((err, req: Request, res: Response, next: NextFunction) => {
     })
 })
 
-const PORT = parseInt(process.env.PORT || "8000", 10)
+const PORT = process.env.PORT || 3000
 
 app.listen(PORT, (err) => {
     if (err) throw err;
