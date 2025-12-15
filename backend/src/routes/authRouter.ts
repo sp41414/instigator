@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express"
 import { login, signup, logout } from "../controllers/authController"
 import passport from "../config/passport"
-import { sign } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 
 const authRouter = Router()
 
@@ -9,7 +9,7 @@ const authRouter = Router()
 authRouter.get("/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }))
 authRouter.get("/google/callback", passport.authenticate("google", { failureMessage: "Failed to authenticate with Google", session: false }), (req: Request, res: Response) => {
     const user = req.user as { id: number }
-    const token = sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: "2d" })
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: "2d" })
     res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

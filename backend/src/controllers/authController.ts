@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../db/prisma";
 import bcrypt from "bcryptjs"
-import { sign } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { matchedData, validationResult, body } from "express-validator"
 
 const SECRET = process.env.JWT_SECRET!
@@ -58,7 +58,7 @@ export const login = [validateLogin, async (req: Request, res: Response, next: N
 
         const isMatch = await bcrypt.compare(password, user.password)
         if (isMatch) {
-            const token = sign({ id: user.id }, SECRET, {
+            const token = jwt.sign({ id: user.id }, SECRET, {
                 expiresIn: "2d"
             })
 
@@ -142,7 +142,7 @@ export const signup = [validateUser, async (req: Request, res: Response, next: N
             }
         })
 
-        const token = sign({ id: newUser.id }, SECRET, { expiresIn: "2d" })
+        const token = jwt.sign({ id: newUser.id }, SECRET, { expiresIn: "2d" })
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
