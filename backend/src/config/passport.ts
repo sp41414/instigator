@@ -1,11 +1,19 @@
 import passport from "passport"
-import { Strategy as JwtStrategy, ExtractJwt, StrategyOptionsWithoutRequest } from "passport-jwt"
+import { Strategy as JwtStrategy, StrategyOptionsWithoutRequest } from "passport-jwt"
 import { Strategy as GoogleStrategy } from "passport-google-oauth20"
 import prisma from "../db/prisma"
-import { JwtPayload } from "../types"
+import { JwtPayload, Request } from "../types"
+
+const extractCookie = (req: Request) => {
+    let token = null
+    if (req && req.signedCookies) {
+        token = req.signedCookies["token"]
+    }
+    return token
+}
 
 const jwtOpts: StrategyOptionsWithoutRequest = {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    jwtFromRequest: extractCookie,
     secretOrKey: process.env.JWT_SECRET!
 }
 
@@ -28,7 +36,7 @@ passport.use(new JwtStrategy(jwtOpts, async (payload: JwtPayload, done) => {
 }))
 
 const googleOpts = {
-    clientId: process.env.GOOGLE_CLIENT_ID!,
+    clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     callbackURL: "/auth/google/callback"
 }
