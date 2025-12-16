@@ -153,6 +153,7 @@ export const signup = [validateUser, async (req: Request, res: Response, next: N
 
         res.status(201).json({
             success: true,
+            message: "Signed up successfully",
             data: {
                 user: newUser
             }
