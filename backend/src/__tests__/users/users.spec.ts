@@ -103,19 +103,171 @@ describe("user routes", () => {
     })
 
     describe("PUT /api/v1/users/me", () => {
-        test.todo("should update authenticated user's profile")
-        test.todo("should update without password field")
-        test.todo("should update without email field")
-        test.todo("should update without about field")
-        test.todo("should reject invalid username length")
-        test.todo("should reject nonexistent username")
-        test.todo("should reject invalid username characters")
-        test.todo("should reject without auth cookie")
-        test.todo("should return 409 with duplicate usernames")
+        it("should update successfully", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me")
+                .set("Cookie", authCookie)
+                .send({
+                    username: "testuserupdated",
+                    password: "password1234",
+                    about: "Im a test user",
+                    email: "testuser@test.com"
+                })
+
+            expect(response.status).toBe(200)
+            expect(response.body.success).toBe(true)
+            expect(response.body.data.user.username).toBe("testuserupdated")
+            expect(response.body.data.user.password).toBeUndefined()
+            expect(response.body.data.user.aboutMe).toBe("Im a test user")
+            expect(response.body.data.user.email).toBe("testuser@test.com")
+        })
+        it("should reject nonexistent password", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me")
+                .set("Cookie", authCookie)
+                .send({
+                    username: "testuserupdated2",
+                    about: "Im a test user, again",
+                    email: "testuser2@test.com"
+                })
+
+            expect(response.status).toBe(400)
+            expect(response.body.success).toBe(false)
+            expect(response.body.error).toBeDefined()
+        })
+        it("should update without email field", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me")
+                .set("Cookie", authCookie)
+                .send({
+                    username: "testuserupdated3",
+                    password: "password12345",
+                    about: "Im a test user, again, again"
+                })
+
+            expect(response.status).toBe(200)
+            expect(response.body.success).toBe(true)
+            expect(response.body.data.user.username).toBe("testuserupdated3")
+            expect(response.body.data.user.password).toBeUndefined()
+            expect(response.body.data.user.aboutMe).toBe("Im a test user, again, again")
+            expect(response.body.data.user.email).toBeNull()
+        })
+        it("should update without about field", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me")
+                .set("Cookie", authCookie)
+                .send({
+                    username: "testuserupdated4",
+                    password: "password123456",
+                    email: "testuser4@test.com"
+                })
+
+            expect(response.status).toBe(200)
+            expect(response.body.success).toBe(true)
+            expect(response.body.data.user.username).toBe("testuserupdated4")
+            expect(response.body.data.user.password).toBeUndefined()
+            expect(response.body.data.user.aboutMe).toBeNull()
+            expect(response.body.data.user.email).toBe("testuser4@test.com")
+        })
+        it("should reject invalid username length", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me")
+                .set("Cookie", authCookie)
+                .send({
+                    username: "a".repeat(23),
+                    password: "password1234567",
+                    email: "testuser4@test.com",
+                    about: "im a test user :)"
+                })
+
+            expect(response.status).toBe(400)
+            expect(response.body.success).toBe(false)
+            expect(response.body.message[0].msg).toMatch(/1 and 20/i)
+        })
+        it("should reject nonexistent username", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me")
+                .set("Cookie", authCookie)
+                .send({
+                    about: "Im a test user, again",
+                    email: "testuser2@test.com",
+                    password: "password12341234"
+                })
+
+            expect(response.status).toBe(400)
+            expect(response.body.success).toBe(false)
+            expect(response.body.error).toBeDefined()
+        })
+        it("should reject invalid username characters", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me")
+                .set("Cookie", authCookie)
+                .send({
+                    username: "!$*!$",
+                    about: "Im a test user, again :0",
+                    email: "testuser3@test.com",
+                    password: "password1234"
+                })
+
+            expect(response.status).toBe(400)
+            expect(response.body.success).toBe(false)
+            expect(response.body.message[0].msg).toMatch(/characters numbers and spaces/i)
+        })
+        it("should reject without auth cookie", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me")
+                .send({
+                    username: "testuser3",
+                    about: "Im a test user, again :0",
+                    email: "testuser3@test.com",
+                    password: "password1234"
+                })
+
+            expect(response.status).toBe(401)
+        })
+        it("should return 409 with duplicate usernames", async () => {
+            // same as user2 from the beginning 
+            const response = await request(app)
+                .put("/api/v1/users/me")
+                .set("Cookie", authCookie)
+                .send({
+                    username: "testuser1",
+                    about: "Im a test user, again :0",
+                    email: "testuser3@test.com",
+                    password: "password1234"
+                })
+            expect(response.status).toBe(409)
+            expect(response.body.success).toBe(false)
+            expect(response.body.message[0]).toMatch(/already taken/i)
+            expect(response.body.error.code).toBe("CONFLICT")
+        })
     })
 
     describe("DELETE /api/v1/users/me", () => {
-        test.todo("should delete authenticated user's profile")
-        test.todo("should reject without auth cookie")
+        it("should reject without auth cookie", async () => {
+            const response = await request(app)
+                .delete("/api/v1/users/me")
+
+            expect(response.status).toBe(401)
+        })
+        it("should delete authenticated user's profile", async () => {
+            const response = await request(app)
+                .delete("/api/v1/users/me")
+                .set("Cookie", authCookie)
+
+            expect(response.status).toBe(200)
+            expect(response.body.success).toBe(true)
+            expect(response.body.message).toMatch(/deleted successfully/i)
+            expect(response.body.data.user.username).toBeDefined()
+
+            const cookies = response.headers['set-cookie']
+            expect(cookies).toBeDefined()
+            expect(cookies[0]).toMatch(/Expires=Thu, 01 Jan 1970/)
+
+            const deletedUser = await prisma.user.findUnique({
+                where: { id: user1!.id }
+            })
+            expect(deletedUser).toBeNull()
+        })
     })
 })
