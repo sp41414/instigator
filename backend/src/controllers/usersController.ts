@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs"
 // TODO: implement changing profile picture by uploading to supabase, way later...
 const validateUpdateUser = [
     // im not sure if the optional overwrites the isLength check, probably...
-    body("username").optional().trim().isLength({ min: 1, max: 20 }).withMessage("Username must be between 1 and 20 characters long").matches(/^[a-zA-Z0-9 ]*$/).withMessage("Username must only have characters numbers and spaces"),
+    body("username").trim().isLength({ min: 1, max: 20 }).withMessage("Username must be between 1 and 20 characters long").matches(/^[a-zA-Z0-9 ]*$/).withMessage("Username must only have characters numbers and spaces"),
     body("password").optional().trim().isLength({ min: 6, max: 32 }).withMessage("Password must be between 6 and 32 characters long").matches(/^[a-zA-Z0-9!@#$%^&*]{6,32}$/).withMessage("Password can only contain letters, numbers, and special characters (!@#$%^&*)."),
     body("about").optional().trim().isLength({ max: 200 }).withMessage("About me has a maximum length of 200 characters"),
     body("email").optional().trim().isEmail().withMessage("Email must be a valid email, e.g. example@gmail.com")
@@ -184,21 +184,19 @@ export const updateProfile = [authenticateJWT, ...validateUpdateUser, async (req
             hashedPassword = await bcrypt.hash(password, salt)
         }
 
-        if (username) {
-            const existingUser = await prisma.user.findFirst({
-                where: {
-                    username,
-                    NOT: { id: req.user!.id }
-                }
-            })
-
-            if (existingUser) {
-                return res.status(409).json({
-                    success: false,
-                    message: ["Username already taken"],
-                    error: { code: "CONFLICT", timestamp: new Date().toISOString() }
-                })
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                username,
+                NOT: { id: req.user!.id }
             }
+        })
+
+        if (existingUser) {
+            return res.status(409).json({
+                success: false,
+                message: ["Username already taken"],
+                error: { code: "CONFLICT", timestamp: new Date().toISOString() }
+            })
         }
 
         if (password && req.user!.googleId) {
@@ -219,7 +217,7 @@ export const updateProfile = [authenticateJWT, ...validateUpdateUser, async (req
                 id: req.user!.id
             },
             data: {
-                ...(username && { username }),
+                username,
                 ...(hashedPassword && { password: hashedPassword }),
                 ...(about && { aboutMe: about }),
                 ...(email && { email })
