@@ -10,3 +10,13 @@ export interface Request extends ExpressRequest {
         [key: string]: any
     }
 }
+
+export interface AuthenticatedRequest extends ExpressRequest {
+    user?: {
+        id: number
+        username: string
+        email?: string | null
+        googleId?: string | null
+        profile_picture_url?: string | null
+    }
+}

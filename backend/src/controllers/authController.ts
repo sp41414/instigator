@@ -163,7 +163,12 @@ export const signup = [validateUser, async (req: Request, res: Response, next: N
 }]
 
 export const logout = (req: Request, res: Response) => {
-    res.clearCookie("token", { signed: true })
+    res.clearCookie("token", {
+        httpOnly: true,
+        signed: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict"
+    })
     res.json({
         success: true,
         message: "Logged out successfully"
