@@ -1,9 +1,8 @@
 import "dotenv/config"
-import express from "express"
+import express, { NextFunction, Request, Response } from "express"
 import cors from "cors"
 import helmet from "helmet"
 import cookieParser from "cookie-parser"
-import { Response } from "express"
 import passport from "./config/passport"
 import router from "./routes"
 
@@ -19,7 +18,7 @@ app.use(helmet())
 app.use(cookieParser(process.env.COOKIE_SECRET!))
 app.use(passport.initialize())
 app.use("/api/v1", router)
-app.use((err, req, res: Response, next) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack)
     res.status(500).json({
         success: false,

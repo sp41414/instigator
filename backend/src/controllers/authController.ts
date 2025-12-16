@@ -48,7 +48,7 @@ export const login = [validateLogin, async (req: Request, res: Response, next: N
         if (!user.password) {
             return res.status(401).json({
                 success: false,
-                message: "This account uses Google sign-in. Please login with Google.",
+                message: ["This account uses Google sign-in. Please login with Google."],
                 error: {
                     code: "UNAUTHORIZED",
                     timestamp: new Date().toISOString()
@@ -84,7 +84,7 @@ export const login = [validateLogin, async (req: Request, res: Response, next: N
         } else {
             return res.status(401).json({
                 success: false,
-                message: "Invalid Username or Password",
+                message: ["Invalid Username or Password"],
                 error: {
                     code: "UNAUTHORIZED",
                     timestamp: new Date().toISOString()

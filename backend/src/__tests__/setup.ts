@@ -1,17 +1,12 @@
-import { PrismaClient } from "../../generated/prisma";
-import { PrismaPg } from "@prisma/adapter-pg";
-
-declare global {
-    var prisma: PrismaClient
-}
+import 'dotenv/config'
+import { PrismaClient } from '../../generated/prisma'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL_TEST! || process.env.DATABASE_URL!
+    connectionString: process.env.DATABASE_URL_TEST!
 })
 
-const prisma = new PrismaClient({
-    adapter
-})
+const prisma = new PrismaClient({ adapter })
 
 beforeEach(async () => {
     await prisma.comment.deleteMany()
@@ -24,4 +19,4 @@ afterAll(async () => {
     await prisma.$disconnect()
 })
 
-global.prisma = prisma
+export { prisma }
