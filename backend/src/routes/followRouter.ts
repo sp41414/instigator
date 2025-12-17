@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+    getFollows,
     sendFollow,
     updateFollowStatus,
     deleteFollow,
@@ -7,6 +8,9 @@ import {
 } from "../controllers/followController";
 
 const followRouter = Router();
+
+// get blocked (sender) users, accepted (both), incoming (recipient) and pending (sender) friend requests
+followRouter.get("/", ...getFollows);
 
 // create a new follow request
 followRouter.post("/", ...sendFollow);

@@ -43,6 +43,81 @@ const userSelect = {
     },
 };
 
+const detailedUserSelect = {
+    id: true,
+    status: true,
+    createdAt: true,
+    acceptedAt: true,
+    sender: {
+        select: {
+            username: true,
+            aboutMe: true,
+            profile_picture_url: true,
+            createdAt: true,
+        },
+    },
+
+    recipient: {
+        select: {
+            username: true,
+            aboutMe: true,
+            profile_picture_url: true,
+            createdAt: true,
+        },
+    },
+};
+
+export const getFollows = [
+    authenticateJWT,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const userId = req.user!.id;
+        try {
+            const [incoming, pending, blocked, acceptedRequests] =
+                await prisma.$transaction([
+                    prisma.follow.findMany({
+                        where: { recipientId: userId, status: "PENDING" },
+                        select: detailedUserSelect,
+                    }),
+                    prisma.follow.findMany({
+                        where: { senderId: userId, status: "PENDING" },
+                        select: detailedUserSelect,
+                    }),
+                    prisma.follow.findMany({
+                        where: { senderId: userId, status: "BLOCKED" },
+                        select: detailedUserSelect,
+                    }),
+                    prisma.follow.findMany({
+                        where: {
+                            status: "ACCEPTED",
+                            OR: [{ recipientId: userId }, { senderId: userId }],
+                        },
+                        include: { sender: true, recipient: true },
+                    }),
+                ]);
+
+            // automatically access the user (friend) to clean up frontend code
+            const accepted = acceptedRequests.map((f) => ({
+                id: f.id,
+                acceptedAt: f.acceptedAt,
+                user: f.senderId === userId ? f.recipient : f.sender,
+            }));
+
+            return res.json({
+                success: true,
+                message: "Successfully retrieved relationships",
+                data: {
+                    accepted,
+                    blocked,
+                    pending,
+                    incoming,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+];
+
 export const sendFollow = [
     authenticateJWT,
     ...validateSendFollow,
