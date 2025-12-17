@@ -104,15 +104,10 @@ describe("GET /api/v1/follows", () => {
             expect(response.status).toBe(200);
             expect(response.body.success).toBe(true);
 
-            expect(response.body.data.accepted[0]).toBeDefined();
-            expect(response.body.data.accepted[1]).toBeDefined();
-            expect(response.body.data.accepted[2]).toBeUndefined();
-
-            expect(response.body.data.incoming[0]).toBeDefined();
-            expect(response.body.data.incoming[1]).toBeUndefined();
-
-            expect(response.body.data.pending[0]).toBeDefined();
-            expect(response.body.data.pending[1]).toBeUndefined();
+            expect(response.body.data.accepted).toHaveLength(2);
+            expect(response.body.data.incoming).toHaveLength(1);
+            expect(response.body.data.pending).toHaveLength(1);
+            expect(response.body.data.blocked).toEqual([]);
 
             const friend1 = response.body.data.accepted.find(
                 (f: any) => f.user.username === "user2",
@@ -148,22 +143,22 @@ describe("GET /api/v1/follows", () => {
                 .set("Cookie", authCookie);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.blocked[0]).toBeDefined();
+            expect(response.body.data.blocked).toHaveLength(1);
             expect(response.body.data.blocked[0].recipient.username).toBe(
                 "user2",
             );
         });
 
-        it("should return empty lists as undefined indexes if no relationships exist", async () => {
+        it("should return empty lists if no relationships exist", async () => {
             const response = await request(app)
                 .get("/api/v1/follows")
                 .set("Cookie", authCookie);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.accepted[0]).toBeUndefined();
-            expect(response.body.data.incoming[0]).toBeUndefined();
-            expect(response.body.data.pending[0]).toBeUndefined();
-            expect(response.body.data.blocked[0]).toBeUndefined();
+            expect(response.body.data.accepted).toEqual([]);
+            expect(response.body.data.incoming).toEqual([]);
+            expect(response.body.data.pending).toEqual([]);
+            expect(response.body.data.blocked).toEqual([]);
         });
     });
 });
