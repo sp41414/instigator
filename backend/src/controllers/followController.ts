@@ -373,6 +373,17 @@ export const updateFollowStatus = [
                 });
             }
 
+            if (follow?.status === status) {
+                return res.status(400).json({
+                    success: false,
+                    message: [`Status is already ${status}`],
+                    error: {
+                        code: "BAD_REQUEST",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
             if (follow?.status === "BLOCKED") {
                 return res.status(400).json({
                     success: false,
