@@ -97,7 +97,7 @@ describe("POST /api/v1/follows", () => {
                 .set("Cookie", user2Cookie)
                 .send({ recipientId: user1.id });
 
-            expect(response.status).toBe(201);
+            expect(response.status).toBe(200);
             expect(response.body.success).toBe(true);
             expect(response.body.message).toMatch(/Accepted friend request/i);
             expect(response.body.data.follow.status).toBe("ACCEPTED");
@@ -264,7 +264,7 @@ describe("POST /api/v1/follows", () => {
                 .set("Cookie", user2Cookie)
                 .send({ recipientId: user1.id });
 
-            expect(response.status).toBe(201);
+            expect(response.status).toBe(200);
             expect(response.body.success).toBe(true);
             expect(response.body.data.follow.status).toBe("PENDING");
             expect(response.body.data.follow.sender.username).toBe("user2");

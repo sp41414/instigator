@@ -19,12 +19,29 @@ const validateUpdateFollow = [
 ];
 
 const validateBlockUser = [
-    param("userId").isInt().withMessage("User ID must be an Integer"),
+    param("userId").isInt().withMessage("User ID must be an Integer").toInt(),
 ];
 
 const validateDeleteFollow = [
     param("followId").isUUID().withMessage("Follow ID must be a valid UUID"),
 ];
+
+const userSelect = {
+    id: true,
+    status: true,
+    createdAt: true,
+    acceptedAt: true,
+    sender: {
+        select: {
+            username: true,
+        },
+    },
+    recipient: {
+        select: {
+            username: true,
+        },
+    },
+};
 
 export const sendFollow = [
     authenticateJWT,
@@ -128,30 +145,9 @@ export const sendFollow = [
                                     status: "ACCEPTED",
                                     acceptedAt: new Date(),
                                 },
-                                select: {
-                                    id: true,
-                                    status: true,
-                                    createdAt: true,
-                                    acceptedAt: true,
-                                    sender: {
-                                        select: {
-                                            username: true,
-                                            aboutMe: true,
-                                            profile_picture_url: true,
-                                            createdAt: true,
-                                        },
-                                    },
-                                    recipient: {
-                                        select: {
-                                            username: true,
-                                            aboutMe: true,
-                                            profile_picture_url: true,
-                                            createdAt: true,
-                                        },
-                                    },
-                                },
+                                select: userSelect,
                             });
-                            return res.status(201).json({
+                            return res.json({
                                 success: true,
                                 message: "Accepted friend request successfully",
                                 data: {
@@ -202,27 +198,7 @@ export const sendFollow = [
                                 data: {
                                     status: "PENDING",
                                 },
-                                select: {
-                                    id: true,
-                                    status: true,
-                                    createdAt: true,
-                                    sender: {
-                                        select: {
-                                            username: true,
-                                            aboutMe: true,
-                                            profile_picture_url: true,
-                                            createdAt: true,
-                                        },
-                                    },
-                                    recipient: {
-                                        select: {
-                                            username: true,
-                                            aboutMe: true,
-                                            profile_picture_url: true,
-                                            createdAt: true,
-                                        },
-                                    },
-                                },
+                                select: userSelect,
                             });
                             return res.json({
                                 success: true,
@@ -240,34 +216,23 @@ export const sendFollow = [
                                     recipientId,
                                     status: "PENDING",
                                 },
-                                select: {
-                                    id: true,
-                                    status: true,
-                                    createdAt: true,
-                                    sender: {
-                                        select: {
-                                            username: true,
-                                            aboutMe: true,
-                                            profile_picture_url: true,
-                                            createdAt: true,
-                                        },
-                                    },
-                                    recipient: {
-                                        select: {
-                                            username: true,
-                                            aboutMe: true,
-                                            profile_picture_url: true,
-                                            createdAt: true,
-                                        },
-                                    },
-                                },
+                                select: userSelect,
                             });
-                            return res.status(201).json({
+                            return res.json({
                                 success: true,
                                 message: "Followed user successfully",
                                 data: { follow: newFollow },
                             });
                         }
+                    default:
+                        return res.status(500).json({
+                            success: false,
+                            message: ["Unexpected follow state"],
+                            error: {
+                                code: "INTERNAL_SERVER_ERROR",
+                                timestamp: new Date().toISOString(),
+                            },
+                        });
                 }
             } else {
                 // if the follow doesn't exist, create a new PENDING one
@@ -276,27 +241,7 @@ export const sendFollow = [
                         senderId,
                         recipientId,
                     },
-                    select: {
-                        id: true,
-                        status: true,
-                        createdAt: true,
-                        sender: {
-                            select: {
-                                username: true,
-                                aboutMe: true,
-                                profile_picture_url: true,
-                                createdAt: true,
-                            },
-                        },
-                        recipient: {
-                            select: {
-                                username: true,
-                                aboutMe: true,
-                                profile_picture_url: true,
-                                createdAt: true,
-                            },
-                        },
-                    },
+                    select: userSelect,
                 });
 
                 return res.status(201).json({
@@ -414,28 +359,7 @@ export const updateFollowStatus = [
                     status: status,
                     acceptedAt: status === "ACCEPTED" ? new Date() : null,
                 },
-                select: {
-                    id: true,
-                    status: true,
-                    createdAt: true,
-                    acceptedAt: true,
-                    sender: {
-                        select: {
-                            username: true,
-                            aboutMe: true,
-                            profile_picture_url: true,
-                            createdAt: true,
-                        },
-                    },
-                    recipient: {
-                        select: {
-                            username: true,
-                            aboutMe: true,
-                            profile_picture_url: true,
-                            createdAt: true,
-                        },
-                    },
-                },
+                select: userSelect,
             });
 
             return res.json({
@@ -505,6 +429,17 @@ export const blockUser = [
                 },
             });
 
+            if (follow?.status === "BLOCKED") {
+                return res.status(400).json({
+                    success: false,
+                    message: ["User is already blocked"],
+                    error: {
+                        code: "BAD_REQUEST",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
             let updatedFollow;
             if (follow) {
                 updatedFollow = await prisma.follow.update({
@@ -513,29 +448,10 @@ export const blockUser = [
                     },
                     data: {
                         status: "BLOCKED",
+                        senderId: req.user!.id,
+                        recipientId: userId,
                     },
-                    select: {
-                        id: true,
-                        status: true,
-                        createdAt: true,
-                        acceptedAt: true,
-                        sender: {
-                            select: {
-                                username: true,
-                                aboutMe: true,
-                                profile_picture_url: true,
-                                createdAt: true,
-                            },
-                        },
-                        recipient: {
-                            select: {
-                                username: true,
-                                aboutMe: true,
-                                profile_picture_url: true,
-                                createdAt: true,
-                            },
-                        },
-                    },
+                    select: userSelect,
                 });
             } else {
                 updatedFollow = await prisma.follow.create({
@@ -544,34 +460,13 @@ export const blockUser = [
                         recipientId: userId,
                         status: "BLOCKED",
                     },
-                    select: {
-                        id: true,
-                        status: true,
-                        createdAt: true,
-                        acceptedAt: true,
-                        sender: {
-                            select: {
-                                username: true,
-                                aboutMe: true,
-                                profile_picture_url: true,
-                                createdAt: true,
-                            },
-                        },
-                        recipient: {
-                            select: {
-                                username: true,
-                                aboutMe: true,
-                                profile_picture_url: true,
-                                createdAt: true,
-                            },
-                        },
-                    },
+                    select: userSelect,
                 });
             }
 
             return res.json({
                 success: true,
-                message: "Blocked user successfully",
+                message: ["Blocked user successfully"],
                 data: {
                     follow: updatedFollow,
                 },
@@ -640,38 +535,38 @@ export const deleteFollow = [
                 where: {
                     id: follow.id,
                 },
-                select: {
-                    id: true,
-                    status: true,
-                    createdAt: true,
-                    acceptedAt: true,
-                    sender: {
-                        select: {
-                            username: true,
-                            aboutMe: true,
-                            profile_picture_url: true,
-                            createdAt: true,
-                        },
-                    },
-                    recipient: {
-                        select: {
-                            username: true,
-                            aboutMe: true,
-                            profile_picture_url: true,
-                            createdAt: true,
-                        },
-                    },
-                },
+                select: userSelect,
             });
 
+            // cases:
+            // 1. blocked, gives unblocked message
+            // 2. pending, gives cancelled friend request message
+            // 3. accepted/refused, gives unfollowed user message
             return res.json({
                 success: true,
-                message: ["Successfully unfollowed user"],
+                message: [
+                    follow.status === "BLOCKED"
+                        ? "Successfully unblocked user"
+                        : follow.status === "PENDING"
+                          ? "Successfully cancelled request"
+                          : "Successfully unfollowed user",
+                ],
                 data: {
                     follow: deletedFollow,
                 },
             });
-        } catch (err) {
+        } catch (err: any) {
+            // handles race condition
+            if (err.code === "P2025") {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Relationship was already deleted"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
             next(err);
         }
     },
