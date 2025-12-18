@@ -536,6 +536,19 @@ const validateCreateComment = [
         .withMessage("Comment must be between 1 and 200 characters long"),
 ];
 
+const validateUpdateComment = [
+    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
+    param("commentId")
+        .trim()
+        .isUUID()
+        .withMessage("Comment ID must be a valid UUID"),
+    body("text")
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 200 })
+        .withMessage("Comment must be between 1 and 200 characters long"),
+];
+
 // controllers
 
 export const createComment = [
@@ -654,7 +667,120 @@ export const createComment = [
 
 export const updateComment = [
     authenticateJWT,
-    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {},
+    ...validateUpdateComment,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const errs = validationResult(req);
+
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { text, postId, commentId } = matchedData(req);
+
+        try {
+            const post = await prisma.post.findUnique({
+                where: {
+                    id: postId,
+                },
+            });
+
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Post not found"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const comment = await prisma.comment.findUnique({
+                where: {
+                    id: commentId,
+                    postId,
+                },
+            });
+
+            if (!comment) {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Comment not found"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            if (comment.userId !== req.user!.id) {
+                return res.status(403).json({
+                    success: false,
+                    message: ["Cannot update another user's comment!"],
+                    error: {
+                        code: "FORBIDDEN",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const updatedComment = await prisma.comment.update({
+                where: {
+                    id: comment.id,
+                    userId: req.user!.id,
+                    postId,
+                },
+                data: {
+                    ...(text && { text }),
+                },
+                select: {
+                    id: true,
+                    text: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    _count: {
+                        select: {
+                            likes: true,
+                        },
+                    },
+                    likes: {
+                        where: {
+                            userId: req.user!.id,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            createdAt: true,
+                            aboutMe: true,
+                            profile_picture_url: true,
+                        },
+                    },
+                },
+            });
+
+            return res.json({
+                success: true,
+                message: "Updated comment successfully",
+                data: {
+                    comment: updatedComment,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 ];
 
 export const deleteComment = [
