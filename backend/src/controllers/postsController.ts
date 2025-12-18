@@ -20,6 +20,10 @@ const validateCreatePost = [
         .withMessage("Post must be between 1 and 400 characters long"),
 ];
 
+const validateDeletePost = [
+    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
+];
+
 const validateUpdatePost = [
     body("text")
         .optional()
@@ -442,5 +446,81 @@ export const updatePost = [
 
 export const deletePost = [
     authenticateJWT,
-    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {},
+    ...validateDeletePost,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const errs = validationResult(req);
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { postId } = matchedData(req);
+        const userId = req.user?.id;
+
+        try {
+            const post = await prisma.post.findUnique({
+                where: {
+                    id: postId,
+                },
+            });
+
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Post not found"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+            if (post.userId !== userId) {
+                return res.status(403).json({
+                    success: false,
+                    message: ["Cannot delete another user's post!"],
+                    error: {
+                        code: "FORBIDDEN",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const deletedPost = await prisma.post.delete({
+                where: {
+                    id: postId,
+                    userId,
+                },
+                select: {
+                    id: true,
+                    text: true,
+                    createdAt: true,
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            createdAt: true,
+                            aboutMe: true,
+                            profile_picture_url: true,
+                        },
+                    },
+                },
+            });
+
+            return res.json({
+                success: true,
+                message: "Deleted post successfully",
+                data: {
+                    post: deletedPost,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 ];
