@@ -27,8 +27,10 @@ model User {
 
     posts           Post[]
     comments        Comment[]
-    sentFollows     Follow[]  @relation("Initiator")
-    receivedFollows Follow[]  @relation("Recipient")
+    sentFollows     Follow[]      @relation("Initiator")
+    receivedFollows Follow[]      @relation("Recipient")
+    likePosts       LikePost[]
+    likeComments    LikeComment[]
 }
 
 enum FollowStatus {
@@ -57,11 +59,11 @@ model Follow {
 model Post {
     id        String   @id @default(uuid())
     text      String
-    likes     Int      @default(0)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     comments Comment[]
+    likes    LikePost[]
 
     user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId Int
@@ -72,9 +74,10 @@ model Post {
 model Comment {
     id        String   @id @default(uuid())
     text      String
-    likes     Int      @default(0)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    likes LikeComment[]
 
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId Int
@@ -82,4 +85,26 @@ model Comment {
     postId String
 
     @@index([postId, userId])
+}
+
+model LikePost {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    userId    Int
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    postId    String
+    post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, postId])
+}
+
+model LikeComment {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    userId    Int
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    commentId String
+    comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, commentId])
 }
