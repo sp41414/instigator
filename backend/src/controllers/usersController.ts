@@ -120,6 +120,7 @@ export const getProfile = [
                     ...(search && {
                         text: {
                             contains: search,
+                            mode: "insensitive",
                         },
                     }),
                 },
@@ -254,6 +255,7 @@ export const getUserProfile = [
                     ...(search && {
                         text: {
                             contains: search,
+                            mode: "insensitive",
                         },
                     }),
                 },
