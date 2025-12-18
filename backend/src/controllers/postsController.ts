@@ -112,7 +112,7 @@ export const createPost = [
                 },
             });
 
-            return res.json({
+            return res.status(201).json({
                 success: true,
                 message: "Created post successfully",
                 data: {
@@ -523,4 +523,141 @@ export const deletePost = [
             next(err);
         }
     },
+];
+
+// comments
+// validation
+
+const validateCreateComment = [
+    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
+    body("text")
+        .trim()
+        .isLength({ min: 1, max: 200 })
+        .withMessage("Comment must be between 1 and 200 characters long"),
+];
+
+// controllers
+
+export const createComment = [
+    authenticateJWT,
+    ...validateCreateComment,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const errs = validationResult(req);
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { text, postId } = matchedData(req);
+        try {
+            const post = await prisma.post.findUnique({
+                where: {
+                    id: postId,
+                },
+            });
+
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Post not found"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const blocked = await prisma.follow.findFirst({
+                where: {
+                    OR: [
+                        {
+                            senderId: post.userId,
+                            recipientId: req.user!.id,
+                            status: "BLOCKED",
+                        },
+                        {
+                            senderId: req.user!.id,
+                            recipientId: post.userId,
+                            status: "BLOCKED",
+                        },
+                    ],
+                },
+            });
+
+            if (blocked) {
+                return res.status(403).json({
+                    success: false,
+                    message: [
+                        "Cannot comment on this post due to blocking relationship",
+                    ],
+                    error: {
+                        code: "FORBIDDEN",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const createdComment = await prisma.comment.create({
+                data: {
+                    text,
+                    userId: req.user!.id,
+                    postId: post.id,
+                },
+                select: {
+                    id: true,
+                    text: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    _count: {
+                        select: {
+                            likes: true,
+                        },
+                    },
+                    likes: {
+                        where: {
+                            userId: req.user!.id,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            createdAt: true,
+                            aboutMe: true,
+                            profile_picture_url: true,
+                        },
+                    },
+                },
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: "Created comment successfully",
+                data: {
+                    comment: createdComment,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+];
+
+export const updateComment = [
+    authenticateJWT,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {},
+];
+
+export const deleteComment = [
+    authenticateJWT,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {},
 ];

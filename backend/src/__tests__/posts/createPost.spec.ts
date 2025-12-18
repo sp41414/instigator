@@ -40,7 +40,7 @@ describe("POST /api/v1/posts", () => {
                     text: postText,
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(201);
             expect(response.body.success).toBe(true);
             expect(response.body.data.post.text).toBe(postText);
             expect(response.body.data.post.user.username).toBe("user");
