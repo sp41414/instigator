@@ -57,6 +57,15 @@ describe("user routes", () => {
             expect(response.body.data.user._count.receivedFollows).toBe(0);
         });
 
+        it("should return 400 for pagination validation", async () => {
+            const response = await request(app)
+                .get("/api/v1/users/me?limit='aa'?cursor=2")
+                .set("Cookie", authCookie);
+
+            expect(response.status).toBe(400);
+            expect(response.body.success).toBe(false);
+        });
+
         it("should reject request without auth cookie", async () => {
             const response = await request(app).get("/api/v1/users/me");
 

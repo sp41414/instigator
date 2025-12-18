@@ -1,6 +1,6 @@
 import { NextFunction, Response } from "express";
 import prisma from "../db/prisma";
-import { validationResult, matchedData, body } from "express-validator";
+import { validationResult, matchedData, body, query } from "express-validator";
 import { authenticateJWT } from "../middleware/auth";
 import { AuthenticatedRequest } from "../types";
 import bcrypt from "bcryptjs";
@@ -34,9 +34,40 @@ const validateUpdateUser = [
         .withMessage("Email must be a valid email, e.g. example@gmail.com"),
 ];
 
+const validatePaginationQuery = [
+    query("limit")
+        .optional()
+        .isInt({ min: 1, max: 50 })
+        .withMessage("Limit must be between 1 and 50")
+        .toInt(),
+    query("cursor")
+        .optional()
+        .isUUID()
+        .withMessage("Cursor must be a valid UUID"),
+    query("search")
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 100 })
+        .withMessage("Search query must be between 1 and 100 characters"),
+];
+
 export const getProfile = [
     authenticateJWT,
+    ...validatePaginationQuery,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const errs = validationResult(req);
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { limit = 10, cursor, search } = matchedData(req);
         try {
             const userProfile = await prisma.user.findUnique({
                 where: {
@@ -69,23 +100,6 @@ export const getProfile = [
                             },
                         },
                     },
-                    posts: {
-                        select: {
-                            id: true,
-                            text: true,
-                            likes: true,
-                            createdAt: true,
-                            _count: {
-                                select: {
-                                    comments: true,
-                                },
-                            },
-                        },
-                        orderBy: {
-                            createdAt: "desc",
-                        },
-                        take: 10,
-                    },
                 },
             });
 
@@ -100,11 +114,56 @@ export const getProfile = [
                 });
             }
 
+            const posts = await prisma.post.findMany({
+                where: {
+                    userId: req.user!.id,
+                    ...(search && {
+                        text: {
+                            contains: search,
+                        },
+                    }),
+                },
+                take: limit + 1,
+                ...(cursor && {
+                    skip: 1,
+                    cursor: {
+                        id: cursor,
+                    },
+                }),
+                orderBy: [
+                    {
+                        createdAt: "desc",
+                    },
+                    {
+                        id: "asc",
+                    },
+                ],
+                select: {
+                    id: true,
+                    text: true,
+                    createdAt: true,
+                    _count: {
+                        select: {
+                            comments: true,
+                            likes: true,
+                        },
+                    },
+                },
+            });
+
+            let nextCursor: string | undefined;
+            if (posts.length > limit) {
+                const lastPost = posts.pop();
+                nextCursor = lastPost!.id;
+            }
+
             return res.json({
                 success: true,
                 message: "User profile fetched",
                 data: {
                     user: userProfile,
+                    posts,
+                    nextCursor,
                 },
             });
         } catch (err) {
@@ -115,6 +174,7 @@ export const getProfile = [
 
 export const getUserProfile = [
     authenticateJWT,
+    ...validatePaginationQuery,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const userId = parseInt(req.params.id);
 
@@ -128,6 +188,20 @@ export const getUserProfile = [
                 },
             });
         }
+
+        const errs = validationResult(req);
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { limit = 10, cursor, search } = matchedData(req);
 
         try {
             const userProfile = await prisma.user.findUnique({
@@ -160,23 +234,6 @@ export const getUserProfile = [
                             },
                         },
                     },
-                    posts: {
-                        select: {
-                            id: true,
-                            text: true,
-                            likes: true,
-                            createdAt: true,
-                            _count: {
-                                select: {
-                                    comments: true,
-                                },
-                            },
-                        },
-                        orderBy: {
-                            createdAt: "desc",
-                        },
-                        take: 10,
-                    },
                 },
             });
 
@@ -191,11 +248,56 @@ export const getUserProfile = [
                 });
             }
 
+            const posts = await prisma.post.findMany({
+                where: {
+                    userId,
+                    ...(search && {
+                        text: {
+                            contains: search,
+                        },
+                    }),
+                },
+                take: limit + 1,
+                ...(cursor && {
+                    skip: 1,
+                    cursor: {
+                        id: cursor,
+                    },
+                }),
+                orderBy: [
+                    {
+                        createdAt: "desc",
+                    },
+                    {
+                        id: "asc",
+                    },
+                ],
+                select: {
+                    id: true,
+                    text: true,
+                    createdAt: true,
+                    _count: {
+                        select: {
+                            comments: true,
+                            likes: true,
+                        },
+                    },
+                },
+            });
+
+            let nextCursor: string | undefined;
+            if (posts.length > limit) {
+                const lastPost = posts.pop();
+                nextCursor = lastPost!.id;
+            }
+
             return res.json({
                 success: true,
                 message: "User profile fetched",
                 data: {
                     user: userProfile,
+                    posts,
+                    nextCursor,
                 },
             });
         } catch (err) {
