@@ -20,6 +20,18 @@ const validateCreatePost = [
         .withMessage("Post must be between 1 and 400 characters long"),
 ];
 
+const validateUpdatePost = [
+    body("text")
+        .optional()
+        .trim()
+        .isLength({
+            min: 1,
+            max: 400,
+        })
+        .withMessage("Post must be between 1 and 400 characters long"),
+    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
+];
+
 const validateFeedQuery = [
     query("limit")
         .optional()
@@ -346,7 +358,86 @@ export const getPost = [
 
 export const updatePost = [
     authenticateJWT,
-    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {},
+    ...validateUpdatePost,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const errs = validationResult(req);
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { text, postId } = matchedData(req);
+        try {
+            const post = await prisma.post.findUnique({
+                where: {
+                    id: postId,
+                },
+            });
+
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Post not found"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            if (post.userId !== req.user?.id) {
+                return res.status(403).json({
+                    success: false,
+                    message: ["Cannot update another user's post!"],
+                    error: {
+                        code: "FORBIDDEN",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const updatedPost = await prisma.post.update({
+                where: {
+                    id: post.id,
+                    userId: req.user!.id,
+                },
+                data: {
+                    ...(text && { text }),
+                },
+                select: {
+                    id: true,
+                    text: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            createdAt: true,
+                            aboutMe: true,
+                            profile_picture_url: true,
+                        },
+                    },
+                },
+            });
+
+            return res.json({
+                success: true,
+                message: "Updated post successfully",
+                data: {
+                    post: updatedPost,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 ];
 
 export const deletePost = [
