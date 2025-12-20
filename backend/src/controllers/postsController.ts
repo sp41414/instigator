@@ -549,6 +549,14 @@ const validateUpdateComment = [
         .withMessage("Comment must be between 1 and 200 characters long"),
 ];
 
+const validateDeleteComment = [
+    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
+    param("commentId")
+        .trim()
+        .isUUID()
+        .withMessage("Comment ID must be a valid UUID"),
+];
+
 // controllers
 
 export const createComment = [
@@ -785,5 +793,113 @@ export const updateComment = [
 
 export const deleteComment = [
     authenticateJWT,
-    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {},
+    ...validateDeleteComment,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const errs = validationResult(req);
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { postId, commentId } = matchedData(req);
+        try {
+            const post = await prisma.post.findUnique({
+                where: {
+                    id: postId,
+                },
+            });
+
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Post not found"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const comment = await prisma.comment.findUnique({
+                where: {
+                    id: commentId,
+                    postId,
+                },
+            });
+
+            if (!comment) {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Comment not found"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            if (comment.userId !== req.user!.id) {
+                return res.status(403).json({
+                    success: false,
+                    message: ["Cannot delete another user's comment!"],
+                    error: {
+                        code: "FORBIDDEN",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const deletedComment = await prisma.comment.delete({
+                where: {
+                    id: comment.id,
+                    userId: req.user!.id,
+                    postId,
+                },
+                select: {
+                    id: true,
+                    text: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    _count: {
+                        select: {
+                            likes: true,
+                        },
+                    },
+                    likes: {
+                        where: {
+                            userId: req.user!.id,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            createdAt: true,
+                            aboutMe: true,
+                            profile_picture_url: true,
+                        },
+                    },
+                },
+            });
+
+            return res.json({
+                success: true,
+                message: "Successfully deleted comment",
+                data: {
+                    comment: deletedComment,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 ];
