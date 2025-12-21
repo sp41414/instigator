@@ -3,6 +3,7 @@ import request from "supertest";
 import app from "../../app";
 import { prisma } from "../setup";
 import bcrypt from "bcryptjs";
+import { supabase } from "../../config/supabase";
 
 describe("user routes", () => {
     let authCookie: string;
@@ -279,6 +280,68 @@ describe("user routes", () => {
                 where: { id: user1!.id },
             });
             expect(deletedUser).toBeNull();
+        });
+    });
+
+    describe("PUT /api/v1/users/me/avatar", () => {
+        beforeAll(() => {
+            jest.spyOn(console, "error").mockImplementation(() => {});
+        });
+
+        afterAll(async () => {
+            (console.error as jest.Mock).mockRestore();
+        });
+
+        it("should upload a profile picture successfully", async () => {
+            const buffer = Buffer.from("fake-png-data");
+
+            const response = await request(app)
+                .put("/api/v1/users/me/avatar")
+                .set("Cookie", authCookie)
+                .attach("file", buffer, "test-avatar.png");
+
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+            expect(response.body.message).toMatch(/successfully updated/i);
+            expect(response.body.data.url).toContain("supabase.co");
+
+            const updatedUser = await prisma.user.findUnique({
+                where: { id: user1!.id },
+            });
+            expect(updatedUser?.profile_picture_url).toBe(
+                response.body.data.url,
+            );
+        });
+
+        it("should reject files that are too large", async () => {
+            const bigBuffer = Buffer.alloc(9 * 1024 * 1024);
+
+            const response = await request(app)
+                .put("/api/v1/users/me/avatar")
+                .set("Cookie", authCookie)
+                .attach("file", bigBuffer, "large.png");
+
+            expect(response.status).toBe(500);
+            expect(response.body.success).toBe(false);
+            expect(response.body.error.code).toBe("LIMIT_FILE_SIZE");
+        });
+
+        it("should reject if no file is provided", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me/avatar")
+                .set("Cookie", authCookie);
+
+            expect(response.status).toBe(400);
+            expect(response.body.success).toBe(false);
+            expect(response.body.message[0].msg).toMatch(/File is required/i);
+        });
+
+        it("should reject request without auth cookie", async () => {
+            const response = await request(app)
+                .put("/api/v1/users/me/avatar")
+                .attach("file", Buffer.from("data"), "test.png");
+
+            expect(response.status).toBe(401);
         });
     });
 });

@@ -1,4 +1,4 @@
-import { body, param, query } from "express-validator";
+import { body, check, param, query } from "express-validator";
 
 // auth validation
 export const validateUser = [
@@ -154,7 +154,7 @@ export const validatePaginationQuery = [
 ];
 
 export const validateProfilePicture = [
-    body("file").custom((v, { req }) => {
+    check("file").custom((_, { req }) => {
         if (!req.file) {
             throw new Error("File is required");
         }

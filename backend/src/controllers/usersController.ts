@@ -9,6 +9,7 @@ import {
     validatePaginationQuery,
     validateProfilePicture,
 } from "../middleware/validation";
+import { supabase } from "../config/supabase";
 
 export const getProfile = [
     authenticateJWT,
@@ -426,7 +427,53 @@ export const updateProfilePicture = [
             });
         }
 
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({
+                success: false,
+                message: ["Upload failed: no file"],
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const fileExt = file?.mimetype.split("/")[1];
+        const filePath = `${req.user!.id}/${Date.now()}.${fileExt}`;
+
         try {
+            const { data, error } = await supabase.storage
+                .from("profile-pictures")
+                .upload(filePath, file.buffer, {
+                    contentType: file.mimetype,
+                    upsert: true,
+                });
+
+            if (error) throw error;
+
+            const {
+                data: { publicUrl },
+            } = supabase.storage
+                .from("profile-pictures")
+                .getPublicUrl(filePath);
+
+            await prisma.user.update({
+                where: {
+                    id: req.user!.id,
+                },
+                data: {
+                    profile_picture_url: publicUrl,
+                },
+            });
+
+            return res.json({
+                success: true,
+                message: "Successfully updated profile picture",
+                data: {
+                    url: publicUrl,
+                },
+            });
         } catch (err) {
             next(err);
         }
