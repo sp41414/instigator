@@ -13,7 +13,8 @@
         "test:coverage": "NODE_ENV=test jest --coverage --runInBand",
         "prisma:generate": "npx prisma generate",
         "prisma:migrate:dev": "npx prisma migrate dev",
-        "prisma:migrate": "npx prisma migrate deploy"
+        "prisma:migrate": "npx prisma migrate deploy",
+        "prisma:seed": "tsx ./src/db/seed.ts"
     },
     "type": "module",
     "keywords": [],
