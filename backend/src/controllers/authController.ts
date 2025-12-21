@@ -10,7 +10,6 @@ import {
 } from "../middleware/validation";
 import { authenticateJWT } from "../middleware/auth";
 import { AuthenticatedRequest } from "../types";
-import logger from "../utils/logger";
 
 const SECRET = process.env.JWT_SECRET!;
 
@@ -19,12 +18,6 @@ export const login = [
     async (req: Request, res: Response, next: NextFunction) => {
         const err = validationResult(req);
         if (!err.isEmpty()) {
-            logger.warn("Failed login attempt", {
-                ip: req.ip,
-                error: err.array,
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: err.array(),
@@ -42,12 +35,6 @@ export const login = [
                 },
             });
             if (!user) {
-                logger.warn("Failed login attempt", {
-                    username,
-                    ip: req.ip,
-                    reason: "user_not_found",
-                });
-
                 return res.status(401).json({
                     success: false,
                     message: ["Invalid Username or Password"],
@@ -60,12 +47,6 @@ export const login = [
                 });
             }
             if (!user.password) {
-                logger.warn("Failed login attempt", {
-                    username,
-                    ip: req.ip,
-                    reason: "google_oauth",
-                });
-
                 return res.status(401).json({
                     success: false,
                     message: [
@@ -104,12 +85,6 @@ export const login = [
                     },
                 });
             } else {
-                logger.warn("Failed login attempt", {
-                    username,
-                    ip: req.ip,
-                    reason: "invalid_password",
-                });
-
                 return res.status(401).json({
                     success: false,
                     message: ["Invalid Username or Password"],
@@ -130,12 +105,6 @@ export const signup = [
     async (req: Request, res: Response, next: NextFunction) => {
         const err = validationResult(req);
         if (!err.isEmpty()) {
-            logger.warn("Failed signup attempt", {
-                ip: req.ip,
-                error: err.array,
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: err.array(),
@@ -153,12 +122,6 @@ export const signup = [
                 },
             });
             if (existingUser) {
-                logger.warn("Failed signup attempt", {
-                    username,
-                    ip: req.ip,
-                    reason: "existing_user",
-                });
-
                 return res.status(409).json({
                     success: false,
                     message: [`Username ${username} is already taken.`],
@@ -228,12 +191,6 @@ export const setupUsername = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const err = validationResult(req);
         if (!err.isEmpty()) {
-            logger.warn("Failed setup username attempt", {
-                ip: req.ip,
-                error: err.array,
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: err.array(),
@@ -255,11 +212,6 @@ export const setupUsername = [
             });
 
             if (existing) {
-                logger.warn("Failed setup username attempt", {
-                    ip: req.ip,
-                    reason: "existing_user",
-                });
-
                 return res.status(409).json({
                     success: false,
                     message: ["Username is already taken"],

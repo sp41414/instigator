@@ -22,18 +22,13 @@ import {
     validateLikeComment,
 } from "../middleware/validation";
 import { supabase } from "../config/supabase";
-import logger from "../utils/logger";
 
 export const createPost = [
     authenticateJWT,
     ...validateCreatePost,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
-        logger.warn("Failed create post attempt", {
-            ip: req.ip,
-            errors: errs.array(),
-            reason: "validation_error",
-        });
+
         if (!errs.isEmpty()) {
             return res.status(400).json({
                 success: false,
@@ -53,13 +48,6 @@ export const createPost = [
                 (!text || text.trim() === "") &&
                 (!files || files.length === 0)
             ) {
-                logger.warn("Failed create post attempt", {
-                    ip: req.ip,
-                    text,
-                    files,
-                    reason: "missing_file_or_text",
-                });
-
                 return res.status(400).json({
                     success: false,
                     message: [
@@ -143,12 +131,6 @@ export const getFeed = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
         if (!errs.isEmpty()) {
-            logger.warn("Failed to get post feed attempt", {
-                ip: req.ip,
-                errors: errs.array(),
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: errs.array(),
@@ -247,12 +229,6 @@ export const getPost = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
         if (!errs.isEmpty()) {
-            logger.warn("Failed get post attempt", {
-                ip: req.ip,
-                errors: errs.array(),
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: errs.array(),
@@ -303,12 +279,6 @@ export const getPost = [
             });
 
             if (!post) {
-                logger.warn("Failed get post attempt", {
-                    ip: req.ip,
-                    post,
-                    reason: "post_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Post not found"],
@@ -399,12 +369,6 @@ export const updatePost = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
         if (!errs.isEmpty()) {
-            logger.warn("Failed update post attempt", {
-                ip: req.ip,
-                errors: errs.array(),
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: errs.array(),
@@ -424,12 +388,6 @@ export const updatePost = [
             });
 
             if (!post) {
-                logger.warn("Failed update post attempt", {
-                    ip: req.ip,
-                    post,
-                    reason: "post_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Post not found"],
@@ -441,13 +399,6 @@ export const updatePost = [
             }
 
             if (post.userId !== req.user?.id) {
-                logger.warn("Failed update post attempt", {
-                    ip: req.ip,
-                    postUserId: post.userId,
-                    unauthorizedUserId: req.user?.id,
-                    reason: "unauthorized_edit_other_user_post",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: ["Cannot update another user's post!"],
@@ -503,12 +454,6 @@ export const deletePost = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
         if (!errs.isEmpty()) {
-            logger.warn("Failed delete post attempt", {
-                ip: req.ip,
-                errors: errs.array(),
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: errs.array(),
@@ -530,12 +475,6 @@ export const deletePost = [
             });
 
             if (!post) {
-                logger.warn("Failed delete post attempt", {
-                    ip: req.ip,
-                    post,
-                    reason: "post_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Post not found"],
@@ -546,13 +485,6 @@ export const deletePost = [
                 });
             }
             if (post.userId !== userId) {
-                logger.warn("Failed delete post attempt", {
-                    ip: req.ip,
-                    postUserId: post.userId,
-                    unauthorizedUserId: req.user?.id,
-                    reason: "unauthorized_delete_other_users_post",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: ["Cannot delete another user's post!"],
@@ -615,11 +547,6 @@ export const createComment = [
     ...validateCreateComment,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
-        logger.warn("Failed create comment attempt", {
-            ip: req.ip,
-            errors: errs.array(),
-            reason: "validation_error",
-        });
         if (!errs.isEmpty()) {
             return res.status(400).json({
                 success: false,
@@ -638,13 +565,6 @@ export const createComment = [
                 (!text || text.trim() === "") &&
                 (!files || files.length === 0)
             ) {
-                logger.warn("Failed create comment attempt", {
-                    ip: req.ip,
-                    text,
-                    files,
-                    reason: "missing_file_or_text",
-                });
-
                 return res.status(400).json({
                     success: false,
                     message: [
@@ -666,12 +586,6 @@ export const createComment = [
             });
 
             if (!post) {
-                logger.warn("Failed create comment attempt", {
-                    ip: req.ip,
-                    post,
-                    reason: "post_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Post not found"],
@@ -700,13 +614,6 @@ export const createComment = [
             });
 
             if (blocked) {
-                logger.warn("Failed create comment attempt", {
-                    ip: req.ip,
-                    post,
-                    blocked: blocked.status === "BLOCKED",
-                    reason: "blocked",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: [
@@ -804,12 +711,6 @@ export const updateComment = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
 
-        logger.warn("Failed update comment attempt", {
-            ip: req.ip,
-            errors: errs.array(),
-            reason: "validation_error",
-        });
-
         if (!errs.isEmpty()) {
             return res.status(400).json({
                 success: false,
@@ -831,12 +732,6 @@ export const updateComment = [
             });
 
             if (!post) {
-                logger.warn("Failed update comment attempt", {
-                    ip: req.ip,
-                    post,
-                    reason: "post_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Post not found"],
@@ -855,12 +750,6 @@ export const updateComment = [
             });
 
             if (!comment) {
-                logger.warn("Failed update comment attempt", {
-                    ip: req.ip,
-                    comment,
-                    reason: "comment_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Comment not found"],
@@ -872,14 +761,6 @@ export const updateComment = [
             }
 
             if (comment.userId !== req.user!.id) {
-                logger.warn("Failed update comment attempt", {
-                    ip: req.ip,
-                    post,
-                    commentUser: comment.userId,
-                    unauthorizedUserId: req.user!.id,
-                    reason: "update_other_user_comment_forbidden",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: ["Cannot update another user's comment!"],
@@ -948,11 +829,6 @@ export const deleteComment = [
     ...validateDeleteComment,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
-        logger.warn("Failed delete comment attempt", {
-            ip: req.ip,
-            errors: errs.array(),
-            reason: "validation_error",
-        });
         if (!errs.isEmpty()) {
             return res.status(400).json({
                 success: false,
@@ -973,12 +849,6 @@ export const deleteComment = [
             });
 
             if (!post) {
-                logger.warn("Failed delete comment attempt", {
-                    ip: req.ip,
-                    post,
-                    reason: "post_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Post not found"],
@@ -997,12 +867,6 @@ export const deleteComment = [
             });
 
             if (!comment) {
-                logger.warn("Failed delete comment attempt", {
-                    ip: req.ip,
-                    comment,
-                    reason: "comment_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Comment not found"],
@@ -1014,13 +878,6 @@ export const deleteComment = [
             }
 
             if (comment.userId !== req.user!.id) {
-                logger.warn("Failed delete comment attempt", {
-                    ip: req.ip,
-                    commentUserId: comment.userId,
-                    unauthorizedUserId: req.user?.id,
-                    reason: "unauthorized_delete_other_users_comment",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: ["Cannot delete another user's comment!"],
@@ -1097,11 +954,6 @@ export const likePost = [
     validateLikePost,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
-        logger.warn("Failed like post attempt", {
-            ip: req.ip,
-            errors: errs.array(),
-            reason: "validation_error",
-        });
         if (!errs.isEmpty()) {
             return res.status(400).json({
                 success: false,
@@ -1122,12 +974,6 @@ export const likePost = [
             });
 
             if (!post) {
-                logger.warn("Failed like comment attempt", {
-                    ip: req.ip,
-                    post,
-                    reason: "post_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Post not found"],
@@ -1156,12 +1002,6 @@ export const likePost = [
             });
 
             if (isBlocked) {
-                logger.warn("Failed delete comment attempt", {
-                    ip: req.ip,
-                    blocked: isBlocked,
-                    reason: "blocked",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: [
@@ -1226,12 +1066,6 @@ export const likeComment = [
     validateLikeComment,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
-
-        logger.warn("Failed like comment attempt", {
-            ip: req.ip,
-            errors: errs.array(),
-            reason: "validation_error",
-        });
         if (!errs.isEmpty()) {
             return res.status(400).json({
                 success: false,
@@ -1253,12 +1087,6 @@ export const likeComment = [
             });
 
             if (!comment) {
-                logger.warn("Failed like comment attempt", {
-                    ip: req.ip,
-                    errors: errs.array(),
-                    reason: "comment_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Comment not found"],
@@ -1287,12 +1115,6 @@ export const likeComment = [
             });
 
             if (isBlocked) {
-                logger.warn("Failed like comment attempt", {
-                    ip: req.ip,
-                    blocked: isBlocked,
-                    reason: "blocked",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: [

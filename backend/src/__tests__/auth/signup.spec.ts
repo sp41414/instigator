@@ -84,7 +84,7 @@ describe("POST /api/v1/auth/signup", () => {
                 .post("/api/v1/auth/signup")
                 .send({
                     username: "passwordlong",
-                    password: "a".repeat(33),
+                    password: "a".repeat(129),
                 });
             expect(response.status).toBe(400);
             expect(response.body.success).toBe(false);

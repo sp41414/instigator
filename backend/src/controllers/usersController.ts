@@ -10,19 +10,14 @@ import {
     validateProfilePicture,
 } from "../middleware/validation";
 import { supabase } from "../config/supabase";
-import logger from "../utils/logger";
 
 export const getProfile = [
     authenticateJWT,
     ...validatePaginationQuery,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
+
         if (!errs.isEmpty()) {
-            logger.warn("Failed get profile attempt", {
-                ip: req.ip,
-                errors: errs.array(),
-                reason: "validation_error",
-            });
             return res.status(400).json({
                 success: false,
                 message: errs.array(),
@@ -70,12 +65,6 @@ export const getProfile = [
             });
 
             if (!userProfile) {
-                logger.warn("Failed get profile attempt", {
-                    ip: req.ip,
-                    userProfile,
-                    reason: "not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: "User not found",
@@ -152,12 +141,6 @@ export const getUserProfile = [
         const userId = parseInt(req.params.id);
 
         if (isNaN(userId)) {
-            logger.warn("Failed get user profile attempt", {
-                ip: req.ip,
-                userId,
-                reason: "invalid_user_id",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: ["Invalid user ID"],
@@ -170,12 +153,6 @@ export const getUserProfile = [
 
         const errs = validationResult(req);
         if (!errs.isEmpty()) {
-            logger.warn("Failed get user profile attempt", {
-                ip: req.ip,
-                errors: errs.array(),
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: errs.array(),
@@ -223,12 +200,6 @@ export const getUserProfile = [
             });
 
             if (!userProfile) {
-                logger.warn("Failed get user profile attempt", {
-                    ip: req.ip,
-                    errors: errs.array(),
-                    reason: "user_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: "User not found",
@@ -304,12 +275,6 @@ export const updateProfile = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const err = validationResult(req);
         if (!err.isEmpty()) {
-            logger.warn("Failed update user profile attempt", {
-                ip: req.ip,
-                errors: err.array(),
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: err.array(),
@@ -336,12 +301,6 @@ export const updateProfile = [
             });
 
             if (existingUser) {
-                logger.warn("Failed update user profile attempt", {
-                    ip: req.ip,
-                    username,
-                    reason: "user_already_taken",
-                });
-
                 return res.status(409).json({
                     success: false,
                     message: ["Username already taken"],
@@ -353,12 +312,6 @@ export const updateProfile = [
             }
 
             if (password && req.user!.googleId) {
-                logger.warn("Failed update user profile attempt", {
-                    ip: req.ip,
-                    googleId: req.user!.googleId,
-                    reason: "oauth_no_password",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: [
@@ -391,12 +344,6 @@ export const updateProfile = [
             });
 
             if (!updatedUserProfile) {
-                logger.warn("Failed update user profile attempt", {
-                    ip: req.ip,
-                    user: updatedUserProfile,
-                    reason: "user_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: "User not found",
@@ -436,12 +383,6 @@ export const deleteUser = [
             });
 
             if (!deletedUser) {
-                logger.warn("Failed delete user profile attempt", {
-                    ip: req.ip,
-                    user: deletedUser,
-                    reason: "user_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: "User not found",
@@ -477,12 +418,6 @@ export const updateProfilePicture = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const err = validationResult(req);
         if (!err.isEmpty()) {
-            logger.warn("Failed update user profile picture attempt", {
-                ip: req.ip,
-                errors: err.array(),
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: err.array(),
@@ -495,12 +430,6 @@ export const updateProfilePicture = [
 
         const file = req.file;
         if (!file) {
-            logger.warn("Failed update user profile picture attempt", {
-                ip: req.ip,
-                file,
-                reason: "missing_data_file",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: ["Upload failed: no file"],

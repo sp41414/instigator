@@ -11,7 +11,6 @@ import {
     validateBlockUser,
     validateDeleteFollow,
 } from "../middleware/validation";
-import logger from "../utils/logger";
 
 const userSelect = {
     id: true,
@@ -111,12 +110,6 @@ export const sendFollow = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
         if (!errs.isEmpty()) {
-            logger.warn("Failed send follow attempt", {
-                ip: req.ip,
-                error: errs.array(),
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: errs.array(),
@@ -132,11 +125,6 @@ export const sendFollow = [
 
         // check if the user is trying to follow themselves
         if (recipientId === senderId) {
-            logger.warn("Failed send follow attempt", {
-                ip: req.ip,
-                reason: "follow_self",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: ["Cannot follow yourself!"],
@@ -155,12 +143,6 @@ export const sendFollow = [
             });
             // check if the recipient doesnt exist
             if (!recipient) {
-                logger.warn("Failed send follow attempt", {
-                    ip: req.ip,
-                    recipientId,
-                    reason: "recipient_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Recipient user not found"],
@@ -185,11 +167,6 @@ export const sendFollow = [
                 switch (follow.status) {
                     // if the user is blocked, check if the sender or the recipient blocked them
                     case "BLOCKED":
-                        logger.warn("Failed send follow attempt", {
-                            ip: req.ip,
-                            follow: follow.status,
-                            reason: "blocked",
-                        });
                         if (follow.senderId === recipientId) {
                             return res.status(403).json({
                                 success: false,
@@ -210,11 +187,6 @@ export const sendFollow = [
                                 },
                             });
                         }
-                        logger.error("Failed send follow attempt", {
-                            ip: req.ip,
-                            follow: follow.status,
-                            reason: "unexpected_state",
-                        });
                         return res.status(500).json({
                             success: false,
                             message: ["Unexpected block state"],
@@ -246,11 +218,6 @@ export const sendFollow = [
                         }
                         // if the user who sent the follow request is not the recipient, that means they sent it twice and it creates a conflict
                         if (follow.senderId === senderId) {
-                            logger.warn("Failed send follow attempt", {
-                                ip: req.ip,
-                                senderId,
-                                reason: "follow_request_already_sent",
-                            });
                             return res.status(409).json({
                                 success: false,
                                 message: [
@@ -262,13 +229,6 @@ export const sendFollow = [
                                 },
                             });
                         }
-
-                        logger.error("Failed send follow attempt", {
-                            ip: req.ip,
-                            follow: follow.status,
-                            reason: "unexpected_state",
-                        });
-
                         return res.status(500).json({
                             success: false,
                             message: [
@@ -281,11 +241,6 @@ export const sendFollow = [
                         });
                     case "ACCEPTED":
                         // if the status is accepted, and the user sends another request, it's a conflict
-                        logger.warn("Failed send follow attempt", {
-                            ip: req.ip,
-                            senderId,
-                            reason: "already_following",
-                        });
                         return res.status(409).json({
                             success: false,
                             message: ["You are already following this user"],
@@ -331,12 +286,6 @@ export const sendFollow = [
                             });
                         }
                     default:
-                        logger.error("Failed send follow attempt", {
-                            ip: req.ip,
-                            follow: follow.status,
-                            reason: "unexpected_state",
-                        });
-
                         return res.status(500).json({
                             success: false,
                             message: ["Unexpected follow state"],
@@ -385,12 +334,6 @@ export const updateFollowStatus = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
         if (!errs.isEmpty()) {
-            logger.warn("Failed accept/refuse follow attempt", {
-                ip: req.ip,
-                error: errs.array(),
-                reason: "validation_error",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: errs.array(),
@@ -413,12 +356,6 @@ export const updateFollowStatus = [
             });
 
             if (!follow) {
-                logger.warn("Failed accept/refuse follow attempt", {
-                    ip: req.ip,
-                    follow,
-                    reason: "follow_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Follow request not found"],
@@ -430,13 +367,6 @@ export const updateFollowStatus = [
             }
 
             if (follow?.recipientId !== userId) {
-                logger.warn("Failed accept/refuse follow attempt", {
-                    ip: req.ip,
-                    recipientId: follow.recipientId,
-                    userId,
-                    reason: "sender_accept_refuse_follow_forbidden",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: [
@@ -450,14 +380,6 @@ export const updateFollowStatus = [
             }
 
             if (follow?.status === status) {
-                logger.warn("Failed accept/refuse follow attempt", {
-                    ip: req.ip,
-                    recipientId: follow.recipientId,
-                    userId,
-                    status,
-                    reason: "duplicate_follow_status_request",
-                });
-
                 return res.status(400).json({
                     success: false,
                     message: [`Status is already ${status}`],
@@ -469,14 +391,6 @@ export const updateFollowStatus = [
             }
 
             if (follow?.status === "BLOCKED") {
-                logger.warn("Failed accept/refuse follow attempt", {
-                    ip: req.ip,
-                    recipientId: follow.recipientId,
-                    userId,
-                    status,
-                    reason: "follow_blocked",
-                });
-
                 return res.status(400).json({
                     success: false,
                     message: ["Cannot update blocked relationship"],
@@ -488,14 +402,6 @@ export const updateFollowStatus = [
             }
 
             if (status === "PENDING") {
-                logger.warn("Failed accept/refuse follow attempt", {
-                    ip: req.ip,
-                    recipientId: follow.recipientId,
-                    userId,
-                    status,
-                    reason: "update_follow_to_pending",
-                });
-
                 return res.status(400).json({
                     success: false,
                     message: ["Cannot go back to pending status"],
@@ -550,12 +456,6 @@ export const blockUser = [
 
         const { userId } = matchedData(req);
         if (userId === req.user!.id) {
-            logger.warn("Failed block follow attempt", {
-                ip: req.ip,
-                userId,
-                reason: "block_self",
-            });
-
             return res.status(400).json({
                 success: false,
                 message: ["Cannot block yourself"],
@@ -571,12 +471,6 @@ export const blockUser = [
             });
 
             if (!userToBlock) {
-                logger.warn("Failed block follow attempt", {
-                    ip: req.ip,
-                    userId,
-                    userToBlock,
-                    reason: "block_user_not_found",
-                });
                 return res.status(404).json({
                     success: false,
                     message: ["User not found"],
@@ -597,12 +491,6 @@ export const blockUser = [
             });
 
             if (follow?.status === "BLOCKED") {
-                logger.warn("Failed block follow attempt", {
-                    ip: req.ip,
-                    userId,
-                    status: follow.status,
-                    reason: "duplicate_block_request",
-                });
                 return res.status(400).json({
                     success: false,
                     message: ["User is already blocked"],
@@ -657,11 +545,6 @@ export const deleteFollow = [
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const errs = validationResult(req);
         if (!errs.isEmpty()) {
-            logger.warn("Failed delete follow attempt", {
-                ip: req.ip,
-                error: errs.array(),
-                reason: "validation_error",
-            });
             return res.status(400).json({
                 success: false,
                 message: errs.array(),
@@ -681,12 +564,6 @@ export const deleteFollow = [
             });
 
             if (!follow) {
-                logger.warn("Failed delete follow attempt", {
-                    ip: req.ip,
-                    error: errs.array(),
-                    reason: "follow_not_found",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: [
@@ -703,12 +580,6 @@ export const deleteFollow = [
                 follow.senderId !== req.user!.id &&
                 follow.recipientId !== req.user!.id
             ) {
-                logger.warn("Failed delete follow attempt", {
-                    ip: req.ip,
-                    error: errs.array(),
-                    reason: "unauthorized",
-                });
-
                 return res.status(403).json({
                     success: false,
                     message: [
@@ -748,12 +619,6 @@ export const deleteFollow = [
         } catch (err: any) {
             // handles race condition
             if (err.code === "P2025") {
-                logger.warn("Failed delete follow attempt", {
-                    ip: req.ip,
-                    error: errs.array(),
-                    reason: "already_deleted_race_condition",
-                });
-
                 return res.status(404).json({
                     success: false,
                     message: ["Relationship was already deleted"],

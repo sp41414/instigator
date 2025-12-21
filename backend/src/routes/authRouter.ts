@@ -7,7 +7,6 @@ import {
 } from "../controllers/authController";
 import passport from "../config/passport";
 import jwt from "jsonwebtoken";
-import { loginLimiter, signUpLimiter } from "../middleware/rateLimiter";
 
 const authRouter = Router();
 
@@ -59,8 +58,8 @@ authRouter.get(
 );
 
 // normal login/signup with JWT
-authRouter.post("/login", loginLimiter, ...login);
-authRouter.post("/signup", signUpLimiter, ...signup);
+authRouter.post("/login", ...login);
+authRouter.post("/signup", ...signup);
 authRouter.post("/logout", logout);
 authRouter.post("/setup-username", ...setupUsername);
 

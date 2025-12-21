@@ -225,7 +225,7 @@ describe("user routes", () => {
             expect(response.status).toBe(400);
             expect(response.body.success).toBe(false);
             expect(response.body.message[0].msg).toMatch(
-                /characters numbers and spaces/i,
+                /characters numbers and dashes/i,
             );
         });
         it("should reject without auth cookie", async () => {

@@ -5,11 +5,11 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport";
 import router from "./routes";
-import morgan from "morgan";
-import logger from "./utils/logger";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -21,23 +21,22 @@ app.use(
 app.use(helmet());
 app.use(cookieParser(process.env.COOKIE_SECRET!));
 app.use(
-    morgan("combined", {
-        stream: {
-            write: (message) => logger.info(message.trim()),
+    rateLimit({
+        windowMs: 5 * 60 * 1000,
+        max: 200,
+        message: {
+            success: false,
+            message: ["Too many requests, try again later"],
+            error: {
+                code: "RATE_LIMIT_EXCEEDED",
+                timestamp: new Date().toISOString(),
+            },
         },
     }),
 );
 app.use(passport.initialize());
 app.use("/api/v1", router);
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    logger.error("Unhandled error", {
-        error: err.message,
-        stack: err.stack,
-        path: req.path,
-        method: req.method,
-        ip: req.ip,
-    });
-
     res.status(500).json({
         success: false,
         message: err.message,
