@@ -458,6 +458,19 @@ export const updateProfilePicture = [
                 .from("profile-pictures")
                 .getPublicUrl(filePath);
 
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: req.user!.id,
+                },
+            });
+
+            if (user?.profile_picture_url) {
+                const oldPath = user.profile_picture_url;
+                await supabase.storage
+                    .from("profile-pictures")
+                    .remove([oldPath]);
+            }
+
             await prisma.user.update({
                 where: {
                     id: req.user!.id,

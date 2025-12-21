@@ -6,13 +6,15 @@ export const validateUser = [
         .trim()
         .isLength({ min: 1, max: 20 })
         .withMessage("Username must be between 1 and 20 characters long")
-        .matches(/^[a-zA-Z0-9 ]*$/)
-        .withMessage("Username must only have characters numbers and spaces"),
+        .matches(/^[a-zA-Z0-9-_]*$/)
+        .withMessage(
+            "Username must only have characters numbers and dashes/underscores",
+        ),
     body("password")
         .trim()
-        .isLength({ min: 6, max: 32 })
-        .withMessage("Password must be between 6 and 32 characters long")
-        .matches(/^[a-zA-Z0-9!@#$%^&*]{6,32}$/)
+        .isLength({ min: 8, max: 128 })
+        .withMessage("Password must be between 8 and 128 characters long")
+        .matches(/^[a-zA-Z0-9!@#$%^&*]{8,128}$/)
         .withMessage(
             "Password can only contain letters, numbers, and special characters (!@#$%^&*).",
         ),
@@ -170,13 +172,15 @@ export const validateUpdateUser = [
         .trim()
         .isLength({ min: 1, max: 20 })
         .withMessage("Username must be between 1 and 20 characters long")
-        .matches(/^[a-zA-Z0-9 ]*$/)
-        .withMessage("Username must only have characters numbers and spaces"),
+        .matches(/^[a-zA-Z0-9-_]*$/)
+        .withMessage(
+            "Username must only have characters numbers and dashes/underscores",
+        ),
     body("password")
         .trim()
-        .isLength({ min: 6, max: 32 })
-        .withMessage("Password must be between 6 and 32 characters long")
-        .matches(/^[a-zA-Z0-9!@#$%^&*]{6,32}$/)
+        .isLength({ min: 8, max: 128 })
+        .withMessage("Password must be between 8 and 128 characters long")
+        .matches(/^[a-zA-Z0-9!@#$%^&*]{8,128}$/)
         .withMessage(
             "Password can only contain letters, numbers, and special characters (!@#$%^&*).",
         ),
@@ -234,6 +238,8 @@ export const validateUsername = [
         .trim()
         .isLength({ min: 1, max: 20 })
         .withMessage("Username must be between 1 and 20 characters long")
-        .matches(/^[a-zA-Z0-9 ]*$/)
-        .withMessage("Username must only have characters numbers and spaces"),
+        .matches(/^[a-zA-Z0-9-_]*$/)
+        .withMessage(
+            "Username must only have characters numbers and dashes/underscores",
+        ),
 ];
