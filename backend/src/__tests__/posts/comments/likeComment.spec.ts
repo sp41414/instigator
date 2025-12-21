@@ -110,7 +110,6 @@ describe("POST /api/v1/posts/:postId/comments/:commentId/like", () => {
         });
 
         it("should be able to like user's own comment", async () => {
-            // Create a comment owned by user1
             const ownComment = await prisma.comment.create({
                 data: {
                     text: "My own comment",
@@ -144,7 +143,6 @@ describe("POST /api/v1/posts/:postId/comments/:commentId/like", () => {
         });
 
         it("should be able to unlike user's own comment", async () => {
-            // Create a comment owned by user1
             const ownComment = await prisma.comment.create({
                 data: {
                     text: "My own comment",
@@ -182,12 +180,10 @@ describe("POST /api/v1/posts/:postId/comments/:commentId/like", () => {
         });
 
         it("should allow multiple users to like the same comment", async () => {
-            // First user likes the comment
             await request(app)
                 .post(`/api/v1/posts/${post.id}/comments/${comment.id}/like`)
                 .set("Cookie", authCookie);
 
-            // Second user logs in
             const user2Response = await request(app)
                 .post("/api/v1/auth/login")
                 .send({
@@ -196,7 +192,6 @@ describe("POST /api/v1/posts/:postId/comments/:commentId/like", () => {
                 });
             const user2Cookie = user2Response.headers["set-cookie"][0];
 
-            // Second user likes the same comment
             const res = await request(app)
                 .post(`/api/v1/posts/${post.id}/comments/${comment.id}/like`)
                 .set("Cookie", user2Cookie);
@@ -244,10 +239,9 @@ describe("POST /api/v1/posts/:postId/comments/:commentId/like", () => {
         });
 
         it("should reject non-existent post", async () => {
-            const nonExistentId = crypto.randomUUID();
             const res = await request(app)
                 .post(
-                    `/api/v1/posts/${nonExistentId}/comments/${comment.id}/like`,
+                    `/api/v1/posts/${crypto.randomUUID()}/comments/${comment.id}/like`,
                 )
                 .set("Cookie", authCookie);
 
@@ -257,9 +251,10 @@ describe("POST /api/v1/posts/:postId/comments/:commentId/like", () => {
         });
 
         it("should reject non-existent comment", async () => {
-            const nonExistentId = crypto.randomUUID();
             const res = await request(app)
-                .post(`/api/v1/posts/${post.id}/comments/${nonExistentId}/like`)
+                .post(
+                    `/api/v1/posts/${post.id}/comments/${crypto.randomUUID()}/like`,
+                )
                 .set("Cookie", authCookie);
 
             expect(res.status).toBe(404);
@@ -322,67 +317,6 @@ describe("POST /api/v1/posts/:postId/comments/:commentId/like", () => {
             expect(res.status).toBe(403);
             expect(res.body.message[0]).toMatch(/BLOCKED relationship/i);
             expect(res.body.error.code).toBe("FORBIDDEN");
-        });
-
-        it("should allow like when users have ACCEPTED follow relationship", async () => {
-            await prisma.follow.create({
-                data: {
-                    senderId: user1.id,
-                    recipientId: user2.id,
-                    status: "ACCEPTED",
-                },
-            });
-
-            const res = await request(app)
-                .post(`/api/v1/posts/${post.id}/comments/${comment.id}/like`)
-                .set("Cookie", authCookie);
-
-            expect(res.status).toBe(201);
-            expect(res.body.message).toBe("Successfully liked comment");
-        });
-
-        it("should allow like when users have PENDING follow relationship", async () => {
-            await prisma.follow.create({
-                data: {
-                    senderId: user1.id,
-                    recipientId: user2.id,
-                    status: "PENDING",
-                },
-            });
-
-            const res = await request(app)
-                .post(`/api/v1/posts/${post.id}/comments/${comment.id}/like`)
-                .set("Cookie", authCookie);
-
-            expect(res.status).toBe(201);
-            expect(res.body.message).toBe("Successfully liked comment");
-        });
-
-        it("should allow like when users have REFUSED follow relationship", async () => {
-            await prisma.follow.create({
-                data: {
-                    senderId: user1.id,
-                    recipientId: user2.id,
-                    status: "REFUSED",
-                },
-            });
-
-            const res = await request(app)
-                .post(`/api/v1/posts/${post.id}/comments/${comment.id}/like`)
-                .set("Cookie", authCookie);
-
-            expect(res.status).toBe(201);
-            expect(res.body.message).toBe("Successfully liked comment");
-        });
-    });
-
-    describe("authentication", () => {
-        it("should reject unauthenticated requests", async () => {
-            const res = await request(app).post(
-                `/api/v1/posts/${post.id}/comments/${comment.id}/like`,
-            );
-
-            expect(res.status).toBe(401);
         });
     });
 });

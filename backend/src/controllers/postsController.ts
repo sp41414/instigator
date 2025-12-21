@@ -72,6 +72,26 @@ const validateGetPost = [
         .withMessage("Search query must be between 1 and 100 characters"),
 ];
 
+const validateProfilePicture = [
+    body("file").custom((value, { req }) => {
+        if (!req.file) {
+            throw new Error("File is required");
+        }
+
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+            "image/webp",
+        ];
+        if (!allowedTypes.includes(req.file.mimetype)) {
+            throw new Error("Only jpeg, png, svg, and webp are allowed");
+        }
+
+        return true;
+    }),
+];
+
 export const createPost = [
     authenticateJWT,
     ...validateCreatePost,
@@ -896,6 +916,240 @@ export const deleteComment = [
                 message: "Successfully deleted comment",
                 data: {
                     comment: deletedComment,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+];
+
+const validateLikePost = [
+    param("postId").isUUID().withMessage("Post ID must be a valid UUID"),
+];
+
+const validateLikeComment = [
+    param("postId").isUUID().withMessage("Post ID must be a valid UUID"),
+    param("commentId").isUUID().withMessage("Comment ID must be a valid UUID"),
+];
+
+export const likePost = [
+    authenticateJWT,
+    validateLikePost,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const errs = validationResult(req);
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { postId } = matchedData(req);
+        try {
+            const post = await prisma.post.findUnique({
+                where: {
+                    id: postId,
+                },
+            });
+
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Post not found"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const isBlocked = await prisma.follow.findFirst({
+                where: {
+                    OR: [
+                        {
+                            senderId: req.user!.id,
+                            recipientId: post.userId,
+                            status: "BLOCKED",
+                        },
+                        {
+                            senderId: post.userId,
+                            recipientId: req.user!.id,
+                            status: "BLOCKED",
+                        },
+                    ],
+                },
+            });
+
+            if (isBlocked) {
+                return res.status(403).json({
+                    success: false,
+                    message: [
+                        "Cannot like a user's post when in a BLOCKED relationship",
+                    ],
+                    error: {
+                        code: "FORBIDDEN",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const existingLike = await prisma.likePost.findUnique({
+                where: {
+                    userId_postId: {
+                        userId: req.user!.id,
+                        postId,
+                    },
+                },
+            });
+
+            if (existingLike) {
+                await prisma.likePost.delete({
+                    where: {
+                        userId_postId: {
+                            userId: req.user!.id,
+                            postId,
+                        },
+                    },
+                });
+                return res.json({
+                    success: true,
+                    message: "Successfully unliked post",
+                    data: {
+                        liked: false,
+                    },
+                });
+            }
+
+            await prisma.likePost.create({
+                data: {
+                    userId: req.user!.id,
+                    postId,
+                },
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: "Successfully liked post",
+                data: {
+                    liked: true,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+];
+
+export const likeComment = [
+    authenticateJWT,
+    validateLikeComment,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const errs = validationResult(req);
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { postId, commentId } = matchedData(req);
+        try {
+            const comment = await prisma.comment.findUnique({
+                where: {
+                    id: commentId,
+                    postId: postId,
+                },
+            });
+
+            if (!comment) {
+                return res.status(404).json({
+                    success: false,
+                    message: ["Comment not found"],
+                    error: {
+                        code: "NOT_FOUND",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const isBlocked = await prisma.follow.findFirst({
+                where: {
+                    OR: [
+                        {
+                            senderId: req.user!.id,
+                            recipientId: comment.userId,
+                            status: "BLOCKED",
+                        },
+                        {
+                            senderId: comment.userId,
+                            recipientId: req.user!.id,
+                            status: "BLOCKED",
+                        },
+                    ],
+                },
+            });
+
+            if (isBlocked) {
+                return res.status(403).json({
+                    success: false,
+                    message: [
+                        "Cannot like a user's comment when in a BLOCKED relationship",
+                    ],
+                    error: {
+                        code: "FORBIDDEN",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const existingLike = await prisma.likeComment.findUnique({
+                where: {
+                    userId_commentId: {
+                        userId: req.user!.id,
+                        commentId: comment.id,
+                    },
+                },
+            });
+
+            if (existingLike) {
+                await prisma.likeComment.delete({
+                    where: {
+                        userId_commentId: {
+                            userId: req.user!.id,
+                            commentId: comment.id,
+                        },
+                    },
+                });
+                return res.json({
+                    success: true,
+                    message: "Successfully unliked comment",
+                    data: {
+                        liked: false,
+                    },
+                });
+            }
+
+            await prisma.likeComment.create({
+                data: {
+                    userId: req.user!.id,
+                    commentId: comment.id,
+                },
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: "Successfully liked comment",
+                data: {
+                    liked: true,
                 },
             });
         } catch (err) {
