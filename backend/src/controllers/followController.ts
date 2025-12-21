@@ -2,29 +2,15 @@ import { NextFunction, Response } from "express";
 import prisma from "../db/prisma";
 import { AuthenticatedRequest } from "../types";
 import { authenticateJWT } from "../middleware/auth";
-import { body, validationResult, matchedData, param } from "express-validator";
+import { validationResult, matchedData } from "express-validator";
 import { FollowStatus } from "../../generated/prisma";
-
-const validateSendFollow = [
-    body("recipientId")
-        .isInt()
-        .withMessage("Recipient ID must be a valid integer"),
-];
-
-const validateUpdateFollow = [
-    param("followId").isUUID().withMessage("Follow ID must be a valid UUID"),
-    body("status")
-        .isIn(["ACCEPTED", "REFUSED"])
-        .withMessage("Status must be ACCEPTED or REFUSED"),
-];
-
-const validateBlockUser = [
-    param("userId").isInt().withMessage("User ID must be an Integer").toInt(),
-];
-
-const validateDeleteFollow = [
-    param("followId").isUUID().withMessage("Follow ID must be a valid UUID"),
-];
+import {
+    validateLogin,
+    validateSendFollow,
+    validateUpdateFollow,
+    validateBlockUser,
+    validateDeleteFollow,
+} from "../middleware/validation";
 
 const userSelect = {
     id: true,

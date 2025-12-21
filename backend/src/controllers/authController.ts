@@ -2,29 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../db/prisma";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { matchedData, validationResult, body } from "express-validator";
+import { matchedData, validationResult } from "express-validator";
+import { validateUser, validateLogin } from "../middleware/validation";
 
 const SECRET = process.env.JWT_SECRET!;
-const validateUser = [
-    body("username")
-        .trim()
-        .isLength({ min: 1, max: 20 })
-        .withMessage("Username must be between 1 and 20 characters long")
-        .matches(/^[a-zA-Z0-9 ]*$/)
-        .withMessage("Username must only have characters numbers and spaces"),
-    body("password")
-        .trim()
-        .isLength({ min: 6, max: 32 })
-        .withMessage("Password must be between 6 and 32 characters long")
-        .matches(/^[a-zA-Z0-9!@#$%^&*]{6,32}$/)
-        .withMessage(
-            "Password can only contain letters, numbers, and special characters (!@#$%^&*).",
-        ),
-];
-const validateLogin = [
-    body("username").trim().notEmpty().withMessage("Username is required"),
-    body("password").trim().notEmpty().withMessage("Password is required"),
-];
 
 export const login = [
     validateLogin,

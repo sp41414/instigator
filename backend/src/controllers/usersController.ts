@@ -4,52 +4,11 @@ import { validationResult, matchedData, body, query } from "express-validator";
 import { authenticateJWT } from "../middleware/auth";
 import { AuthenticatedRequest } from "../types";
 import bcrypt from "bcryptjs";
-
-// TODO: implement changing profile picture by uploading to supabase, way later...
-const validateUpdateUser = [
-    // im not sure if the optional overwrites the isLength check, probably...
-    body("username")
-        .trim()
-        .isLength({ min: 1, max: 20 })
-        .withMessage("Username must be between 1 and 20 characters long")
-        .matches(/^[a-zA-Z0-9 ]*$/)
-        .withMessage("Username must only have characters numbers and spaces"),
-    body("password")
-        .trim()
-        .isLength({ min: 6, max: 32 })
-        .withMessage("Password must be between 6 and 32 characters long")
-        .matches(/^[a-zA-Z0-9!@#$%^&*]{6,32}$/)
-        .withMessage(
-            "Password can only contain letters, numbers, and special characters (!@#$%^&*).",
-        ),
-    body("about")
-        .optional()
-        .trim()
-        .isLength({ max: 200 })
-        .withMessage("About me has a maximum length of 200 characters"),
-    body("email")
-        .optional()
-        .trim()
-        .isEmail()
-        .withMessage("Email must be a valid email, e.g. example@gmail.com"),
-];
-
-const validatePaginationQuery = [
-    query("limit")
-        .optional()
-        .isInt({ min: 1, max: 50 })
-        .withMessage("Limit must be between 1 and 50")
-        .toInt(),
-    query("cursor")
-        .optional()
-        .isUUID()
-        .withMessage("Cursor must be a valid UUID"),
-    query("search")
-        .optional()
-        .trim()
-        .isLength({ min: 1, max: 100 })
-        .withMessage("Search query must be between 1 and 100 characters"),
-];
+import {
+    validateUpdateUser,
+    validatePaginationQuery,
+    validateProfilePicture,
+} from "../middleware/validation";
 
 export const getProfile = [
     authenticateJWT,
@@ -445,6 +404,29 @@ export const deleteUser = [
                     user: deletedUser,
                 },
             });
+        } catch (err) {
+            next(err);
+        }
+    },
+];
+
+export const updateProfilePicture = [
+    authenticateJWT,
+    ...validateProfilePicture,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const err = validationResult(req);
+        if (!err.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: err.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        try {
         } catch (err) {
             next(err);
         }

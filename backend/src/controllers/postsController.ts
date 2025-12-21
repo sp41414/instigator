@@ -9,88 +9,13 @@ import {
     query,
     param,
 } from "express-validator";
-
-const validateCreatePost = [
-    body("text")
-        .trim()
-        .isLength({
-            min: 1,
-            max: 400,
-        })
-        .withMessage("Post must be between 1 and 400 characters long"),
-];
-
-const validateDeletePost = [
-    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
-];
-
-const validateUpdatePost = [
-    body("text")
-        .optional()
-        .trim()
-        .isLength({
-            min: 1,
-            max: 400,
-        })
-        .withMessage("Post must be between 1 and 400 characters long"),
-    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
-];
-
-const validateFeedQuery = [
-    query("limit")
-        .optional()
-        .isInt({ min: 1, max: 50 })
-        .withMessage("Limit must be between 1 and 50")
-        .toInt(),
-    query("cursor")
-        .optional()
-        .isUUID()
-        .withMessage("Cursor must be a valid UUID"),
-    query("search")
-        .optional()
-        .trim()
-        .isLength({ min: 1, max: 100 })
-        .withMessage("Search query must be between 1 and 100 characters"),
-];
-
-const validateGetPost = [
-    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
-    // paginaton for comments
-    query("limit")
-        .optional()
-        .isInt({ min: 1, max: 50 })
-        .withMessage("Limit must be between 1 and 50")
-        .toInt(),
-    query("cursor")
-        .optional()
-        .isUUID()
-        .withMessage("Cursor must be a valid UUID"),
-    query("search")
-        .optional()
-        .trim()
-        .isLength({ min: 1, max: 100 })
-        .withMessage("Search query must be between 1 and 100 characters"),
-];
-
-const validateProfilePicture = [
-    body("file").custom((value, { req }) => {
-        if (!req.file) {
-            throw new Error("File is required");
-        }
-
-        const allowedTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/svg+xml",
-            "image/webp",
-        ];
-        if (!allowedTypes.includes(req.file.mimetype)) {
-            throw new Error("Only jpeg, png, svg, and webp are allowed");
-        }
-
-        return true;
-    }),
-];
+import {
+    validateCreatePost,
+    validateDeletePost,
+    validateUpdatePost,
+    validateFeedQuery,
+    validateGetPost,
+} from "../middleware/validation";
 
 export const createPost = [
     authenticateJWT,
