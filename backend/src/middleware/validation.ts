@@ -48,7 +48,15 @@ export const validateDeleteFollow = [
 // post validation
 export const validateCreatePost = [
     body("text")
+        .optional({ checkFalsy: true })
         .trim()
+        .custom((value, { req }) => {
+            const hasFiles = req.files && (req.files as any[]).length > 0;
+            if (!value && !hasFiles) {
+                throw new Error("Post must contain text or at least one file");
+            }
+            return true;
+        })
         .isLength({
             min: 1,
             max: 400,
@@ -106,6 +114,54 @@ export const validateGetPost = [
         .trim()
         .isLength({ min: 1, max: 100 })
         .withMessage("Search query must be between 1 and 100 characters"),
+];
+
+export const validateCreateComment = [
+    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
+    body("text")
+        .optional({ checkFalsy: true })
+        .trim()
+        .custom((value, { req }) => {
+            const hasFiles = req.files && (req.files as any[]).length > 0;
+            if (!value && !hasFiles) {
+                throw new Error(
+                    "Comment must contain text or at least one file",
+                );
+            }
+            return true;
+        })
+        .isLength({ min: 1, max: 200 })
+        .withMessage("Comment must be between 1 and 200 characters long"),
+];
+
+export const validateUpdateComment = [
+    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
+    param("commentId")
+        .trim()
+        .isUUID()
+        .withMessage("Comment ID must be a valid UUID"),
+    body("text")
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 200 })
+        .withMessage("Comment must be between 1 and 200 characters long"),
+];
+
+export const validateDeleteComment = [
+    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
+    param("commentId")
+        .trim()
+        .isUUID()
+        .withMessage("Comment ID must be a valid UUID"),
+];
+
+export const validateLikePost = [
+    param("postId").isUUID().withMessage("Post ID must be a valid UUID"),
+];
+
+export const validateLikeComment = [
+    param("postId").isUUID().withMessage("Post ID must be a valid UUID"),
+    param("commentId").isUUID().withMessage("Comment ID must be a valid UUID"),
 ];
 
 // user validation

@@ -15,7 +15,13 @@ import {
     validateUpdatePost,
     validateFeedQuery,
     validateGetPost,
+    validateCreateComment,
+    validateUpdateComment,
+    validateDeleteComment,
+    validateLikePost,
+    validateLikeComment,
 } from "../middleware/validation";
+import { supabase } from "../config/supabase";
 
 export const createPost = [
     authenticateJWT,
@@ -36,14 +42,62 @@ export const createPost = [
         const { text } = matchedData(req);
 
         try {
+            const files = req.files as Express.Multer.File[];
+            if (
+                (!text || text.trim() === "") &&
+                (!files || files.length === 0)
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: [
+                        { msg: "Post must contain text or at least one file" },
+                    ],
+                    error: {
+                        code: "BAD_REQUEST",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const file_urls: string[] = [];
+
+            if (files && files.length > 0) {
+                const uploads = files.map(async (file) => {
+                    const fileExt = file.originalname.split(".").pop();
+                    // a file name such as this because upsert is enabled
+                    const filePath = `${req.user!.id}/posts/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+                    const { error } = await supabase.storage
+                        .from("posts-files")
+                        .upload(filePath, file.buffer, {
+                            contentType: file.mimetype,
+                            upsert: true,
+                        });
+
+                    if (error) throw error;
+
+                    const {
+                        data: { publicUrl },
+                    } = supabase.storage
+                        .from("posts-files")
+                        .getPublicUrl(filePath);
+
+                    return publicUrl;
+                });
+
+                const urls = await Promise.all(uploads);
+                file_urls.push(...urls);
+            }
             const newPost = await prisma.post.create({
                 data: {
                     text,
                     userId: req.user!.id,
+                    file_urls,
                 },
                 select: {
                     id: true,
                     text: true,
+                    file_urls: true,
                     createdAt: true,
                     user: {
                         select: {
@@ -121,6 +175,7 @@ export const getFeed = [
                     text: true,
                     createdAt: true,
                     updatedAt: true,
+                    file_urls: true,
                     // count the comments and likes
                     _count: {
                         select: {
@@ -194,6 +249,7 @@ export const getPost = [
                     text: true,
                     createdAt: true,
                     updatedAt: true,
+                    file_urls: true,
                     // count the comments and likes
                     _count: {
                         select: {
@@ -251,6 +307,7 @@ export const getPost = [
                     text: true,
                     createdAt: true,
                     updatedAt: true,
+                    file_urls: true,
                     _count: {
                         select: {
                             likes: true,
@@ -364,6 +421,7 @@ export const updatePost = [
                     text: true,
                     createdAt: true,
                     updatedAt: true,
+                    file_urls: true,
                     user: {
                         select: {
                             id: true,
@@ -436,6 +494,17 @@ export const deletePost = [
                 });
             }
 
+            if (post.file_urls && post.file_urls.length > 0) {
+                const pathsToDelete = post.file_urls.map((url) => {
+                    // userId/posts/filename.ext
+                    return url.split("/").slice(-3).join("/");
+                });
+
+                await supabase.storage
+                    .from("posts-files")
+                    .remove(pathsToDelete);
+            }
+
             const deletedPost = await prisma.post.delete({
                 where: {
                     id: postId,
@@ -445,6 +514,7 @@ export const deletePost = [
                     id: true,
                     text: true,
                     createdAt: true,
+                    file_urls: true,
                     user: {
                         select: {
                             id: true,
@@ -471,39 +541,6 @@ export const deletePost = [
 ];
 
 // comments
-// validation
-
-const validateCreateComment = [
-    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
-    body("text")
-        .trim()
-        .isLength({ min: 1, max: 200 })
-        .withMessage("Comment must be between 1 and 200 characters long"),
-];
-
-const validateUpdateComment = [
-    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
-    param("commentId")
-        .trim()
-        .isUUID()
-        .withMessage("Comment ID must be a valid UUID"),
-    body("text")
-        .optional()
-        .trim()
-        .isLength({ min: 1, max: 200 })
-        .withMessage("Comment must be between 1 and 200 characters long"),
-];
-
-const validateDeleteComment = [
-    param("postId").trim().isUUID().withMessage("Post ID must be a valid UUID"),
-    param("commentId")
-        .trim()
-        .isUUID()
-        .withMessage("Comment ID must be a valid UUID"),
-];
-
-// controllers
-
 export const createComment = [
     authenticateJWT,
     ...validateCreateComment,
@@ -522,6 +559,25 @@ export const createComment = [
 
         const { text, postId } = matchedData(req);
         try {
+            const files = req.files as Express.Multer.File[];
+            if (
+                (!text || text.trim() === "") &&
+                (!files || files.length === 0)
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: [
+                        { msg: "Post must contain text or at least one file" },
+                    ],
+                    error: {
+                        code: "BAD_REQUEST",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const file_urls: string[] = [];
+
             const post = await prisma.post.findUnique({
                 where: {
                     id: postId,
@@ -569,17 +625,47 @@ export const createComment = [
                 });
             }
 
+            if (files && files.length > 0) {
+                const uploads = files.map(async (file) => {
+                    const fileExt = file.originalname.split(".").pop();
+                    // a file name such as this because upsert is enabled
+                    const filePath = `${req.user!.id}/comments/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+                    const { error } = await supabase.storage
+                        .from("comments-files")
+                        .upload(filePath, file.buffer, {
+                            contentType: file.mimetype,
+                            upsert: true,
+                        });
+
+                    if (error) throw error;
+
+                    const {
+                        data: { publicUrl },
+                    } = supabase.storage
+                        .from("comments-files")
+                        .getPublicUrl(filePath);
+
+                    return publicUrl;
+                });
+
+                const urls = await Promise.all(uploads);
+                file_urls.push(...urls);
+            }
+
             const createdComment = await prisma.comment.create({
                 data: {
                     text,
                     userId: req.user!.id,
                     postId: post.id,
+                    file_urls,
                 },
                 select: {
                     id: true,
                     text: true,
                     createdAt: true,
                     updatedAt: true,
+                    file_urls: true,
                     _count: {
                         select: {
                             likes: true,
@@ -698,6 +784,7 @@ export const updateComment = [
                     text: true,
                     createdAt: true,
                     updatedAt: true,
+                    file_urls: true,
                     _count: {
                         select: {
                             likes: true,
@@ -800,6 +887,17 @@ export const deleteComment = [
                 });
             }
 
+            if (comment.file_urls && comment.file_urls.length > 0) {
+                const pathsToDelete = comment.file_urls.map((url) => {
+                    // userId/comments/filename.ext
+                    return url.split("/").slice(-3).join("/");
+                });
+
+                await supabase.storage
+                    .from("comments-files")
+                    .remove(pathsToDelete);
+            }
+
             const deletedComment = await prisma.comment.delete({
                 where: {
                     id: comment.id,
@@ -811,6 +909,7 @@ export const deleteComment = [
                     text: true,
                     createdAt: true,
                     updatedAt: true,
+                    file_urls: true,
                     _count: {
                         select: {
                             likes: true,
@@ -847,15 +946,6 @@ export const deleteComment = [
             next(err);
         }
     },
-];
-
-const validateLikePost = [
-    param("postId").isUUID().withMessage("Post ID must be a valid UUID"),
-];
-
-const validateLikeComment = [
-    param("postId").isUUID().withMessage("Post ID must be a valid UUID"),
-    param("commentId").isUUID().withMessage("Comment ID must be a valid UUID"),
 ];
 
 export const likePost = [

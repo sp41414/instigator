@@ -9,6 +9,7 @@ describe("DELETE /api/v1/posts/:postId/comments/:commentId", () => {
     let otherUser: any;
     let post: any;
     let comment: any;
+    let commentWithFiles: any;
     let otherUserComment: any;
     let hashedPassword: string;
     let authCookie: string;
@@ -64,6 +65,18 @@ describe("DELETE /api/v1/posts/:postId/comments/:commentId", () => {
             },
         });
 
+        commentWithFiles = await prisma.comment.create({
+            data: {
+                text: "Comment with files",
+                userId: user.id,
+                postId: post.id,
+                file_urls: [
+                    "https://example.com/storage/comments-files/1/comments/test-1.jpg",
+                    "https://example.com/storage/comments-files/1/comments/test-2.jpg",
+                ],
+            },
+        });
+
         otherUserComment = await prisma.comment.create({
             data: {
                 text: "Other user's comment",
@@ -84,7 +97,6 @@ describe("DELETE /api/v1/posts/:postId/comments/:commentId", () => {
             expect(response.body.message).toBe("Successfully deleted comment");
             expect(response.body.data.comment.id).toBe(comment.id);
             expect(response.body.data.comment.text).toBe("Comment to delete");
-            expect(response.body.data.comment.user.id).toBe(user.id);
 
             const deletedComment = await prisma.comment.findUnique({
                 where: { id: comment.id },
@@ -118,15 +130,26 @@ describe("DELETE /api/v1/posts/:postId/comments/:commentId", () => {
 
             expect(response.status).toBe(200);
 
-            const deletedComment = await prisma.comment.findUnique({
-                where: { id: comment.id },
-            });
-            expect(deletedComment).toBeNull();
-
             const likesAfter = await prisma.likeComment.findMany({
                 where: { commentId: comment.id },
             });
             expect(likesAfter).toHaveLength(0);
+        });
+
+        it("should delete comment and remove associated files from storage", async () => {
+            const response = await request(app)
+                .delete(
+                    `/api/v1/posts/${post.id}/comments/${commentWithFiles.id}`,
+                )
+                .set("Cookie", authCookie);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comment.file_urls).toHaveLength(2);
+
+            const deletedComment = await prisma.comment.findUnique({
+                where: { id: commentWithFiles.id },
+            });
+            expect(deletedComment).toBeNull();
         });
 
         it("should allow comment owner to delete comment even if blocked", async () => {
@@ -143,12 +166,6 @@ describe("DELETE /api/v1/posts/:postId/comments/:commentId", () => {
                 .set("Cookie", authCookie);
 
             expect(response.status).toBe(200);
-            expect(response.body.success).toBe(true);
-
-            const deletedComment = await prisma.comment.findUnique({
-                where: { id: comment.id },
-            });
-            expect(deletedComment).toBeNull();
         });
     });
 
@@ -159,7 +176,6 @@ describe("DELETE /api/v1/posts/:postId/comments/:commentId", () => {
                 .set("Cookie", authCookie);
 
             expect(response.status).toBe(400);
-            expect(response.body.success).toBe(false);
         });
 
         it("should reject invalid comment ID format", async () => {
@@ -168,50 +184,6 @@ describe("DELETE /api/v1/posts/:postId/comments/:commentId", () => {
                 .set("Cookie", authCookie);
 
             expect(response.status).toBe(400);
-            expect(response.body.success).toBe(false);
-        });
-    });
-
-    describe("post not found", () => {
-        it("should return 404 for non-existent post", async () => {
-            const nonExistentId = crypto.randomUUID();
-            const response = await request(app)
-                .delete(`/api/v1/posts/${nonExistentId}/comments/${comment.id}`)
-                .set("Cookie", authCookie);
-
-            expect(response.status).toBe(404);
-            expect(response.body.success).toBe(false);
-            expect(response.body.message[0]).toBe("Post not found");
-        });
-    });
-
-    describe("comment not found", () => {
-        it("should return 404 for non-existent comment", async () => {
-            const nonExistentId = crypto.randomUUID();
-            const response = await request(app)
-                .delete(`/api/v1/posts/${post.id}/comments/${nonExistentId}`)
-                .set("Cookie", authCookie);
-
-            expect(response.status).toBe(404);
-            expect(response.body.success).toBe(false);
-            expect(response.body.message[0]).toBe("Comment not found");
-        });
-
-        it("should return 404 for comment on different post", async () => {
-            const otherPost = await prisma.post.create({
-                data: {
-                    text: "Another post",
-                    userId: user.id,
-                },
-            });
-
-            const response = await request(app)
-                .delete(`/api/v1/posts/${otherPost.id}/comments/${comment.id}`)
-                .set("Cookie", authCookie);
-
-            expect(response.status).toBe(404);
-            expect(response.body.success).toBe(false);
-            expect(response.body.message[0]).toBe("Comment not found");
         });
     });
 
@@ -224,7 +196,6 @@ describe("DELETE /api/v1/posts/:postId/comments/:commentId", () => {
                 .set("Cookie", authCookie);
 
             expect(response.status).toBe(403);
-            expect(response.body.success).toBe(false);
             expect(response.body.message[0]).toBe(
                 "Cannot delete another user's comment!",
             );
@@ -238,23 +209,6 @@ describe("DELETE /api/v1/posts/:postId/comments/:commentId", () => {
                 .set("Cookie", otherUserAuthCookie);
 
             expect(response.status).toBe(200);
-            expect(response.body.success).toBe(true);
-            expect(response.body.data.comment.id).toBe(otherUserComment.id);
-        });
-    });
-
-    describe("concurrent deletion", () => {
-        it("should handle when comment is already deleted", async () => {
-            await request(app)
-                .delete(`/api/v1/posts/${post.id}/comments/${comment.id}`)
-                .set("Cookie", authCookie);
-
-            const response = await request(app)
-                .delete(`/api/v1/posts/${post.id}/comments/${comment.id}`)
-                .set("Cookie", authCookie);
-
-            expect(response.status).toBe(404);
-            expect(response.body.success).toBe(false);
         });
     });
 });

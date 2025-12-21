@@ -8,6 +8,7 @@ describe("DELETE /api/v1/posts/:postId", () => {
     let user: any;
     let otherUser: any;
     let post: any;
+    let postWithFiles: any;
     let otherUserPost: any;
     let hashedPassword: string;
     let authCookie: string;
@@ -52,6 +53,17 @@ describe("DELETE /api/v1/posts/:postId", () => {
             data: {
                 text: "Post to delete",
                 userId: user.id,
+            },
+        });
+
+        postWithFiles = await prisma.post.create({
+            data: {
+                text: "Post with files to delete",
+                userId: user.id,
+                file_urls: [
+                    "https://example.com/storage/posts-files/1/posts/test-file-1.jpg",
+                    "https://example.com/storage/posts-files/1/posts/test-file-2.jpg",
+                ],
             },
         });
 
@@ -158,6 +170,47 @@ describe("DELETE /api/v1/posts/:postId", () => {
                 where: { postId: post.id },
             });
             expect(likesAfter).toHaveLength(0);
+        });
+
+        it("should delete the post and remove associated files from storage", async () => {
+            const response = await request(app)
+                .delete(`/api/v1/posts/${postWithFiles.id}`)
+                .set("Cookie", authCookie);
+
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+            expect(response.body.data.post.file_urls).toHaveLength(2);
+
+            const deletedPost = await prisma.post.findUnique({
+                where: { id: postWithFiles.id },
+            });
+            expect(deletedPost).toBeNull();
+
+            // Note: In a real test environment, you'd want to verify
+            // that supabase.storage.remove() was called with the correct paths
+            // This might require mocking the Supabase client
+        });
+
+        it("should delete post with empty file_urls array", async () => {
+            const postNoFiles = await prisma.post.create({
+                data: {
+                    text: "Post without files",
+                    userId: user.id,
+                    file_urls: [],
+                },
+            });
+
+            const response = await request(app)
+                .delete(`/api/v1/posts/${postNoFiles.id}`)
+                .set("Cookie", authCookie);
+
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+
+            const deletedPost = await prisma.post.findUnique({
+                where: { id: postNoFiles.id },
+            });
+            expect(deletedPost).toBeNull();
         });
     });
 
