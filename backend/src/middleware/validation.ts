@@ -228,3 +228,12 @@ export const validateProfilePicture = [
         return true;
     }),
 ];
+
+export const validateUsername = [
+    body("username")
+        .trim()
+        .isLength({ min: 1, max: 20 })
+        .withMessage("Username must be between 1 and 20 characters long")
+        .matches(/^[a-zA-Z0-9 ]*$/)
+        .withMessage("Username must only have characters numbers and spaces"),
+];

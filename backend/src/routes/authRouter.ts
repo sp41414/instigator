@@ -1,5 +1,10 @@
 import { Request, Response, Router } from "express";
-import { login, signup, logout } from "../controllers/authController";
+import {
+    login,
+    signup,
+    logout,
+    setupUsername,
+} from "../controllers/authController";
 import passport from "../config/passport";
 import jwt from "jsonwebtoken";
 
@@ -20,7 +25,7 @@ authRouter.get(
         session: false,
     }),
     (req: Request, res: Response) => {
-        const user = req.user as { id: number };
+        const user = req.user as { id: number; username: string };
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
             expiresIn: "2d",
         });
@@ -32,9 +37,22 @@ authRouter.get(
             signed: true,
         });
 
+        if (user.username.startsWith("temp_")) {
+            return res.json({
+                success: false,
+                message: "Temporary username, please setup your username",
+                data: {
+                    needsUsername: true,
+                },
+            });
+        }
+
         return res.json({
             success: true,
             message: "Logged in successfully",
+            data: {
+                needsUsername: false,
+            },
         });
     },
 );
@@ -43,5 +61,6 @@ authRouter.get(
 authRouter.post("/login", ...login);
 authRouter.post("/signup", ...signup);
 authRouter.post("/logout", logout);
+authRouter.post("/setup-username", ...setupUsername);
 
 export default authRouter;

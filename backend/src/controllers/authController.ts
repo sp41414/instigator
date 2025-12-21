@@ -3,7 +3,13 @@ import prisma from "../db/prisma";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { matchedData, validationResult } from "express-validator";
-import { validateUser, validateLogin } from "../middleware/validation";
+import {
+    validateUser,
+    validateLogin,
+    validateUsername,
+} from "../middleware/validation";
+import { authenticateJWT } from "../middleware/auth";
+import { AuthenticatedRequest } from "../types";
 
 const SECRET = process.env.JWT_SECRET!;
 
@@ -178,3 +184,63 @@ export const logout = (req: Request, res: Response) => {
         message: "Logged out successfully",
     });
 };
+
+export const setupUsername = [
+    authenticateJWT,
+    validateUsername,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const err = validationResult(req);
+        if (!err.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: err.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { username } = matchedData(req);
+        const user = req.user as { id: number };
+
+        try {
+            const existing = await prisma.user.findUnique({
+                where: {
+                    username,
+                },
+            });
+
+            if (existing) {
+                return res.status(409).json({
+                    success: false,
+                    message: ["Username is already taken"],
+                    error: {
+                        code: "CONFLICT",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
+            const updatedUser = await prisma.user.update({
+                where: { id: user.id },
+                data: { username },
+                select: {
+                    id: true,
+                    username: true,
+                    profile_picture_url: true,
+                },
+            });
+
+            return res.json({
+                success: true,
+                message: "Username set successfully",
+                data: {
+                    user: updatedUser,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+];
