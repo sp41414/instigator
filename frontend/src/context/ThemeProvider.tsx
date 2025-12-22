@@ -1,9 +1,25 @@
-import { createContext, useSTate } from "react";
+import {
+    createContext,
+    useState,
+    useEffect,
+    type ReactNode,
+    type Dispatch,
+    type SetStateAction,
+} from "react";
 
-export const ThemeContext = createContext(null);
+interface ThemeContextType {
+    isDark: boolean;
+    setIsDark: Dispatch<SetStateAction<boolean>>;
+}
 
-const ThemeProvider = () => {
-    const [isDark, setIsDark] = useState(() => {
+export const ThemeContext = createContext<ThemeContextType | null>(null);
+
+interface ThemeProviderProps {
+    children?: ReactNode;
+}
+
+function ThemeProvider({ children }: ThemeProviderProps) {
+    const [isDark, setIsDark] = useState<boolean>((): boolean => {
         const saved = localStorage.getItem("theme");
         return saved === "dark";
     });
@@ -19,6 +35,6 @@ const ThemeProvider = () => {
             {children}
         </ThemeContext.Provider>
     );
-};
+}
 
 export default ThemeProvider;
