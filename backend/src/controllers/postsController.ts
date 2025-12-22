@@ -22,6 +22,32 @@ import {
     validateLikeComment,
 } from "../middleware/validation";
 import { supabase } from "../config/supabase";
+import sanitize from "sanitize-html";
+
+const sanitizeOptions = {
+    allowedTags: [
+        "ul",
+        "li",
+        "ol",
+        "em",
+        "strong",
+        "i",
+        "s",
+        "u",
+        "code",
+        "img",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+    ],
+    allowedAttributes: {
+        img: ["src", "alt"],
+        allowedSchemes: ["http", "https", "mailto", "tel"],
+    },
+};
 
 export const createPost = [
     authenticateJWT,
@@ -40,7 +66,8 @@ export const createPost = [
             });
         }
 
-        const { text } = matchedData(req);
+        let { text } = matchedData(req);
+        text = sanitize(text, sanitizeOptions);
 
         try {
             const files = req.files as Express.Multer.File[];
@@ -379,7 +406,9 @@ export const updatePost = [
             });
         }
 
-        const { text, postId } = matchedData(req);
+        let { text, postId } = matchedData(req);
+        text = sanitize(text, sanitizeOptions);
+
         try {
             const post = await prisma.post.findUnique({
                 where: {
@@ -558,7 +587,9 @@ export const createComment = [
             });
         }
 
-        const { text, postId } = matchedData(req);
+        let { text, postId } = matchedData(req);
+        text = sanitize(text, sanitizeOptions);
+
         try {
             const files = req.files as Express.Multer.File[];
             if (
@@ -722,7 +753,8 @@ export const updateComment = [
             });
         }
 
-        const { text, postId, commentId } = matchedData(req);
+        let { text, postId, commentId } = matchedData(req);
+        text = sanitize(text, sanitizeOptions);
 
         try {
             const post = await prisma.post.findUnique({
