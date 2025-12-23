@@ -1,12 +1,5 @@
 import { Link, useLocation } from "react-router";
-import {
-    Home,
-    Search,
-    Users,
-    User,
-    ChevronRight,
-    ChevronLeft,
-} from "lucide-react";
+import { Home, Search, Users, User, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 export default function NavBar() {
