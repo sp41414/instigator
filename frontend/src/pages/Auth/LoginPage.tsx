@@ -27,17 +27,6 @@ export default function LoginPage() {
                 ...prev,
                 username: "Username is required",
             }));
-        } else if (value.length < 1 || value.length > 20) {
-            setErrors((prev) => ({
-                ...prev,
-                username: "Username must be between 1 and 20 characters long",
-            }));
-        } else if (!/^[a-zA-Z0-9-_]*$/.test(value)) {
-            setErrors((prev) => ({
-                ...prev,
-                username:
-                    "Username must only have letters, numbers, dashes, and underscores",
-            }));
         } else {
             setErrors((prev) => ({ ...prev, username: "" }));
         }
@@ -50,17 +39,6 @@ export default function LoginPage() {
             setErrors((prev) => ({
                 ...prev,
                 password: "Password is required",
-            }));
-        } else if (value.length < 8 || value.length > 128) {
-            setErrors((prev) => ({
-                ...prev,
-                password: "Password must be between 8 and 128 characters long",
-            }));
-        } else if (!/^[a-zA-Z0-9!@#$%^&*]{8,128}$/.test(value)) {
-            setErrors((prev) => ({
-                ...prev,
-                password:
-                    "Password can only contain letters, numbers, and !@#$%^&*",
             }));
         } else {
             setErrors((prev) => ({ ...prev, password: "" }));
