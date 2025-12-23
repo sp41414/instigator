@@ -43,7 +43,7 @@ passport.use(
 const googleOpts = {
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: "/auth/google/callback",
+    callbackURL: "/api/v1/auth/google/callback",
 };
 
 passport.use(
@@ -65,8 +65,14 @@ passport.use(
                         },
                     });
 
-                    user = await prisma.user.create({
-                        data: {
+                    user = await prisma.user.upsert({
+                        where: {
+                            googleId: profile.id,
+                        },
+                        update: {
+                            profile_picture_url: profile.photos?.[0]?.value,
+                        },
+                        create: {
                             googleId: profile.id,
                             email: profile.emails?.[0]?.value,
                             username: existingUsername

@@ -21,7 +21,7 @@ authRouter.get(
 authRouter.get(
     "/google/callback",
     passport.authenticate("google", {
-        failureMessage: "Failed to authenticate with Google",
+        failureRedirect: `${process.env.FRONTEND_URL}/login?error=auth_failed`,
         session: false,
     }),
     (req: Request, res: Response) => {
@@ -29,6 +29,7 @@ authRouter.get(
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
             expiresIn: "2d",
         });
+
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -37,23 +38,7 @@ authRouter.get(
             signed: true,
         });
 
-        if (user.username.startsWith("temp_")) {
-            return res.json({
-                success: false,
-                message: "Temporary username, please setup your username",
-                data: {
-                    needsUsername: true,
-                },
-            });
-        }
-
-        return res.json({
-            success: true,
-            message: "Logged in successfully",
-            data: {
-                needsUsername: false,
-            },
-        });
+        res.redirect(`${process.env.FRONTEND_URL}/`);
     },
 );
 

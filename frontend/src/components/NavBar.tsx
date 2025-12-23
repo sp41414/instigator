@@ -42,7 +42,7 @@ export default function NavBar() {
                 to="/"
                 className={`hidden md:flex justify-center items-center gap-3 p-6 border-b border-zinc-200 dark:border-zinc-800 ${isCollapsed ? "md:hidden" : ""}`}
             >
-                <img src="../../public/logo.png" alt="logo" className="w-32" />
+                <img src="/logo.png" alt="logo" className="w-32" />
                 <span className="hidden md:block text-4xl font-display font-bold text-zinc-900 dark:text-white">
                     Instigator
                 </span>

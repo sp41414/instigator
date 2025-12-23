@@ -1,3 +1,8 @@
 import { API_URL } from "./useAuth";
 
-// TODO
+export const useGoogleLogin = () => {
+    const loginGoogle = () => {
+        window.location.href = `${API_URL}/auth/google`;
+    };
+    return { loginGoogle };
+};
