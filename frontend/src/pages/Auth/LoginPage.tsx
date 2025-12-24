@@ -4,6 +4,7 @@ import { useLogin } from "../../hooks/auth/useLogin";
 import { Link, useNavigate } from "react-router";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useCheckAuth } from "../../hooks/auth/useCheckAuth";
+import { useGuestLogin } from "../../hooks/auth/useGuestLogin";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");
@@ -11,12 +12,14 @@ export default function LoginPage() {
     const [errors, setErrors] = useState({
         username: "",
         password: "",
+        guestLogin: "",
     });
     const [touched, setTouched] = useState({
         username: false,
         password: false,
     });
     const { loginGoogle } = useGoogleLogin();
+    const { guestLogin } = useGuestLogin();
     const { login, error, isLoading } = useLogin();
     const navigate = useNavigate();
     const { state } = useCheckAuth();
@@ -69,6 +72,19 @@ export default function LoginPage() {
         }
     };
 
+    const handleGuestLogin = async () => {
+        try {
+            await guestLogin();
+            navigate("/");
+        } catch (err) {
+            console.error(err);
+            setErrors((prev) => ({
+                ...prev,
+                guestLogin: "An error occurred while logging in as a guest",
+            }));
+        }
+    };
+
     if (state.isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -79,6 +95,7 @@ export default function LoginPage() {
 
     const showUsernameError = touched.username && errors.username;
     const showPasswordError = touched.password && errors.password;
+    const showGuestError = errors.guestLogin;
     const isUsernameValid = username && !errors.username && touched.username;
     const isPasswordValid = password && !errors.password && touched.password;
 
@@ -243,6 +260,20 @@ export default function LoginPage() {
                     </svg>
                     Continue with Google
                 </button>
+
+                <button
+                    onClick={handleGuestLogin}
+                    className="w-full py-3 mt-2 bg-slate-200 dark:bg-zinc-700 border-transparent hover:bg-slate-300 dark:hover:bg-zinc-600 text-slate-900 dark:text-white cursor-pointer font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-3"
+                >
+                    Continue as a Guest
+                </button>
+
+                {showGuestError && (
+                    <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.guestLogin}
+                    </p>
+                )}
 
                 <p className="text-center text-sm text-zinc-600 dark:text-zinc-400 mt-6">
                     Don't have an account?

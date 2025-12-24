@@ -255,3 +255,44 @@ export const setupUsername = [
         }
     },
 ];
+
+export const guestLogin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        // guest user will always have an ID of 1
+        const guestUser = await prisma.user.findUnique({
+            where: {
+                id: 1,
+            },
+        });
+
+        const token = jwt.sign({ id: guestUser?.id }, SECRET, {
+            expiresIn: "2d",
+        });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
+            signed: true,
+        });
+
+        return res.json({
+            success: true,
+            message: "Logged in successfully",
+            data: {
+                user: {
+                    id: guestUser?.id,
+                    username: guestUser?.username,
+                    profile_picture_url: guestUser?.profile_picture_url,
+                },
+            },
+        });
+    } catch (err) {
+        next(err);
+    }
+};

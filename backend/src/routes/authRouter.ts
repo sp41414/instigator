@@ -4,6 +4,7 @@ import {
     signup,
     logout,
     setupUsername,
+    guestLogin,
 } from "../controllers/authController";
 import passport from "../config/passport";
 import jwt from "jsonwebtoken";
@@ -47,5 +48,8 @@ authRouter.post("/login", ...login);
 authRouter.post("/signup", ...signup);
 authRouter.post("/logout", logout);
 authRouter.post("/setup-username", ...setupUsername);
+
+// guest login
+authRouter.get("/guest-login", guestLogin);
 
 export default authRouter;
