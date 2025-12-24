@@ -2,10 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 import { parseErrorMessage } from "../../utils/parseError";
 import { API_URL } from "../auth/useAuth";
-
-interface Post {
-    // TODO
-}
+import type { Post } from "../posts/useGetFeed";
 
 interface UserProfile {
     user: {
@@ -46,8 +43,6 @@ export function useGetUser() {
             setLoading(false);
         }
     }
-
-    console.log(user);
 
     return { user, getUser, error, loading };
 }
