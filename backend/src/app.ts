@@ -20,20 +20,20 @@ app.use(
 );
 app.use(helmet());
 app.use(cookieParser(process.env.COOKIE_SECRET!));
-app.use(
-    rateLimit({
-        windowMs: 5 * 60 * 1000,
-        max: 200,
-        message: {
-            success: false,
-            message: ["Too many requests, try again later"],
-            error: {
-                code: "RATE_LIMIT_EXCEEDED",
-                timestamp: new Date().toISOString(),
-            },
-        },
-    }),
-);
+// app.use(
+//     rateLimit({
+//         windowMs: 5 * 60 * 1000,
+//         max: 200,
+//         message: {
+//             success: false,
+//             message: ["Too many requests, try again later"],
+//             error: {
+//                 code: "RATE_LIMIT_EXCEEDED",
+//                 timestamp: new Date().toISOString(),
+//             },
+//         },
+//     }),
+// );
 app.use(passport.initialize());
 app.use("/api/v1", router);
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

@@ -2,10 +2,20 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 @theme {
   --font-sans: "Nunito", system-ui, -apple-system, sans-serif;
   --font-display: "Comfortaa", "Nunito", system-ui, sans-serif;
   --font-body: "DM Sans", system-ui, sans-serif;
+  --animate-fadeIn: fadeIn 0.3s;
 }
 
 html,

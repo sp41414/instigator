@@ -3,12 +3,27 @@ import { useState } from "react";
 import { parseErrorMessage } from "../../utils/parseError";
 import { API_URL } from "../auth/useAuth";
 
+interface Post {
+    // TODO
+}
+
+interface UserProfile {
+    user: {
+        id: number;
+        username: string;
+        profile_picture_url?: string;
+        email?: string;
+        aboutMe?: string;
+    };
+    posts: Post[];
+}
+
 export function useGetUser() {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    async function getUser(id: number) {
+    async function getUser(id?: number) {
         setLoading(true);
         setError(null);
 
@@ -31,6 +46,8 @@ export function useGetUser() {
             setLoading(false);
         }
     }
+
+    console.log(user);
 
     return { user, getUser, error, loading };
 }
