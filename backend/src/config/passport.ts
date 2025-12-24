@@ -59,9 +59,14 @@ passport.use(
 
                 if (!user) {
                     const googleUsername = profile?.displayName;
+                    const cleanedUsername = googleUsername?.replace(
+                        /\s+/g,
+                        "_",
+                    );
+
                     const existingUsername = await prisma.user.findUnique({
                         where: {
-                            username: googleUsername,
+                            username: cleanedUsername,
                         },
                     });
 
@@ -75,10 +80,10 @@ passport.use(
                         create: {
                             googleId: profile.id,
                             email: profile.emails?.[0]?.value,
-                            username: existingUsername
-                                ? `temp_${profile.id}`
-                                : profile.displayName?.replace(/\s+/g, "_") ||
-                                  `user_${profile.id}`,
+                            username:
+                                existingUsername || !cleanedUsername
+                                    ? `temp_${profile.id}`
+                                    : cleanedUsername,
                             profile_picture_url: profile.photos?.[0]?.value,
                         },
                     });
