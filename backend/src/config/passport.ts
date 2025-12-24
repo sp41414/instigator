@@ -77,7 +77,8 @@ passport.use(
                             email: profile.emails?.[0]?.value,
                             username: existingUsername
                                 ? `temp_${profile.id}`
-                                : profile.displayName || `user_${profile.id}`,
+                                : profile.displayName?.replace(/\s+/g, "_") ||
+                                  `user_${profile.id}`,
                             profile_picture_url: profile.photos?.[0]?.value,
                         },
                     });
