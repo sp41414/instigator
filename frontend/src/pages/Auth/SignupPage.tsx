@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGoogleLogin } from "../../hooks/auth/useGoogleLogin";
 import { useSignup } from "../../hooks/auth/useSignup";
 import { Link, useNavigate } from "react-router";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useCheckAuth } from "../../hooks/auth/useCheckAuth";
 
 export default function SignupPage() {
     const [username, setUsername] = useState("");
@@ -21,6 +22,13 @@ export default function SignupPage() {
     const { signup, error, isLoading } = useSignup();
     const { loginGoogle } = useGoogleLogin();
     const navigate = useNavigate();
+    const { state } = useCheckAuth();
+
+    useEffect(() => {
+        if (state.isAuthenticated && !state.needsUsername && !state.isLoading) {
+            navigate("/");
+        }
+    }, [state.isAuthenticated, state.needsUsername, state.isLoading, navigate]);
 
     const handleUsernameUpdate = (value: string) => {
         setUsername(value);
@@ -120,6 +128,14 @@ export default function SignupPage() {
             console.error("Signup failed:", err);
         }
     };
+
+    if (state.isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="w-12 h-12 text-zinc-600 dark:text-zinc-400 animate-spin" />
+            </div>
+        );
+    }
 
     const showUsernameError = touched.username && errors.username;
     const showPasswordError = touched.password && errors.password;

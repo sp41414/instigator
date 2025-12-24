@@ -3,6 +3,7 @@ import RootLayout from "./pages";
 import HomePage from "./pages";
 import LoginPage from "./pages/Auth/LoginPage";
 import SignupPage from "./pages/Auth/SignupPage";
+import SetupUsernamePage from "./pages/Auth/SetupUsernamePage";
 
 const router = createBrowserRouter([
     {
@@ -51,6 +52,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/setup-username",
+        element: <SetupUsernamePage />,
     },
 ]);
 

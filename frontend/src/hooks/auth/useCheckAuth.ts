@@ -5,7 +5,7 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router";
 
 export const useCheckAuth = () => {
-    const { dispatch } = useAuth();
+    const { state, dispatch } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
@@ -56,5 +56,5 @@ export const useCheckAuth = () => {
         checkAuth();
     }, [dispatch, navigate, location.pathname]);
 
-    return { error, isLoading };
+    return { error, isLoading, state };
 };

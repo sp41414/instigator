@@ -202,9 +202,20 @@ export const setupUsername = [
         }
 
         const { username } = matchedData(req);
-        const user = req.user as { id: number };
+        const user = req.user as { id: number; username: string };
 
         try {
+            if (!user.username.startsWith("temp_")) {
+                return res.status(403).json({
+                    success: false,
+                    message: ["You don't need to set up a username"],
+                    error: {
+                        code: "FORBIDDEN",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
             const existing = await prisma.user.findUnique({
                 where: {
                     username,
