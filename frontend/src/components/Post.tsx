@@ -16,6 +16,7 @@ import {
 import FileModal from "./FileModal";
 import { useDeletePost } from "../hooks/posts/useDeletePost";
 import { useUpdatePost } from "../hooks/posts/useUpdatePost";
+import { useLikePost } from "../hooks/posts/useLikePost";
 
 interface PostProps {
     post: {
@@ -51,6 +52,7 @@ export default function Post({ post, currentUserId }: PostProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(post.text || "");
     const [isDeleted, setIsDeleted] = useState(false);
+    const { toggleLike } = useLikePost();
 
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -117,10 +119,10 @@ export default function Post({ post, currentUserId }: PostProps) {
 
     const handleLike = async () => {
         try {
-            // TODO: like api call/hook
+            const liked = await toggleLike(post.id);
 
-            setIsLiked(!isLiked);
-            setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
+            setIsLiked(liked);
+            setLikeCount((prev) => (liked ? prev + 1 : prev - 1));
         } catch (err) {
             console.error(err);
         }
