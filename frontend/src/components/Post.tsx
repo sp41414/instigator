@@ -119,9 +119,13 @@ export default function Post({ post, currentUserId }: PostProps) {
     const isOwner = currentUserId === post.user.id;
 
     return (
-        <article className="border-b border-zinc-200 dark:border-zinc-800 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors duration-200">
-            <div className="flex items-start gap-3">
-                <Link to={`/profile/${post.user.id}`} className="shrink-0">
+        <article className="relative border-b border-zinc-200 dark:border-zinc-800 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors duration-200">
+            <Link to={`/posts/${post.id}`} className="absolute inset-0 z-0" />
+            <div className="flex items-start gap-3 relative z-10 pointer-events-none">
+                <Link
+                    to={`/profile/${post.user.id}`}
+                    className="shrink-0 relative z-20 pointer-events-auto"
+                >
                     {post?.user?.profile_picture_url ? (
                         <img
                             src={post?.user?.profile_picture_url}
@@ -137,7 +141,7 @@ export default function Post({ post, currentUserId }: PostProps) {
 
                 <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 relative z-20 pointer-events-auto">
                             <Link
                                 to={`/profile/${post.user.id}`}
                                 className="font-display font-bold text-zinc-900 dark:text-white hover:underline"
@@ -151,7 +155,7 @@ export default function Post({ post, currentUserId }: PostProps) {
                         </div>
 
                         {isOwner && (
-                            <div className="relative">
+                            <div className="relative z-30 pointer-events-auto">
                                 <button
                                     onClick={() => setShowOptions(!showOptions)}
                                     className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer"
@@ -160,8 +164,7 @@ export default function Post({ post, currentUserId }: PostProps) {
                                 </button>
 
                                 {showOptions && isOwner && (
-                                    <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg py-2 z-10">
-                                        {/* TODO: delete & edit post functions */}
+                                    <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg py-2 z-50">
                                         <button className="flex items-center gap-3 w-full px-4 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer">
                                             <Edit className="w-4 h-4" />
                                             <span>Edit Post</span>
@@ -176,16 +179,16 @@ export default function Post({ post, currentUserId }: PostProps) {
                         )}
                     </div>
 
-                    <Link to={`/posts/${post.id}`}>
+                    <div className="relative z-10">
                         {post?.text && (
                             <p className="prose dark:prose-invert mb-3 whitespace-pre-wrap font-body">
                                 {post?.text}
                             </p>
                         )}
-                    </Link>
+                    </div>
 
                     {post.file_urls.length > 0 && (
-                        <div className="mb-3">
+                        <div className="mb-3 relative z-20 pointer-events-auto">
                             {post.file_urls.map((url, index) => {
                                 const fileType = getFileType(url);
 
@@ -260,11 +263,11 @@ export default function Post({ post, currentUserId }: PostProps) {
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 relative z-20 pointer-events-auto">
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={handleLike}
-                                className={`flex items-center gap-2 transition-colors duration-200 ${isLiked ? "text-red-600 dark:text-red-400" : "hover:text-red-600 dark:hover:text-red-400"}`}
+                                className={`flex items-center gap-2 transition-colors duration-200 cursor-pointer ${isLiked ? "text-red-600 dark:text-red-400" : "hover:text-red-600 dark:hover:text-red-400"}`}
                             >
                                 <Heart
                                     className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`}

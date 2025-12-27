@@ -51,7 +51,7 @@ export const useGetFeed = () => {
             const data = response.data?.data;
 
             setFeed((prev) => {
-                if (!prev || cursor) {
+                if (!prev || !cursor) {
                     return data;
                 } else {
                     return {
