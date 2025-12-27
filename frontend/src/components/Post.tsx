@@ -9,8 +9,13 @@ import {
     Play,
     Trash2,
     File,
+    Check,
+    X,
+    Loader2,
 } from "lucide-react";
 import FileModal from "./FileModal";
+import { useDeletePost } from "../hooks/posts/useDeletePost";
+import { useUpdatePost } from "../hooks/posts/useUpdatePost";
 
 interface PostProps {
     post: {
@@ -41,6 +46,11 @@ export default function Post({ post, currentUserId }: PostProps) {
         type: string;
         name?: string;
     } | null>(null);
+    const { deletePost, isLoading: isDeleting } = useDeletePost();
+    const { updatePost, isLoading: isUpdating } = useUpdatePost();
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(post.text || "");
+    const [isDeleted, setIsDeleted] = useState(false);
 
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -116,11 +126,38 @@ export default function Post({ post, currentUserId }: PostProps) {
         }
     };
 
+    const handleDelete = async () => {
+        try {
+            await deletePost(post.id);
+            setIsDeleted(true);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleUpdate = async () => {
+        if (!editText.trim()) return;
+        try {
+            await updatePost(post.id, editText);
+            post.text = editText;
+            setIsEditing(false);
+            setShowOptions(false);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    if (isDeleted) return null;
     const isOwner = currentUserId === post.user.id;
 
     return (
         <article className="relative border-b border-zinc-200 dark:border-zinc-800 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors duration-200">
-            <Link to={`/posts/${post.id}`} className="absolute inset-0 z-0" />
+            {!isEditing && (
+                <Link
+                    to={`/posts/${post.id}`}
+                    className="absolute inset-0 z-0"
+                />
+            )}
             <div className="flex items-start gap-3 relative z-10 pointer-events-none">
                 <Link
                     to={`/profile/${post.user.id}`}
@@ -165,12 +202,26 @@ export default function Post({ post, currentUserId }: PostProps) {
 
                                 {showOptions && isOwner && (
                                     <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg py-2 z-50">
-                                        <button className="flex items-center gap-3 w-full px-4 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer">
+                                        <button
+                                            onClick={() => {
+                                                setIsEditing(true);
+                                                setShowOptions(false);
+                                            }}
+                                            className="flex items-center gap-3 w-full px-4 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                        >
                                             <Edit className="w-4 h-4" />
                                             <span>Edit Post</span>
                                         </button>
-                                        <button className="flex items-center gap-3 w-full px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
-                                            <Trash2 className="w-4 h-4" />
+                                        <button
+                                            onClick={handleDelete}
+                                            disabled={isDeleting}
+                                            className="flex items-center gap-3 w-full px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer disabled:opacity-50"
+                                        >
+                                            {isDeleting ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="w-4 h-4" />
+                                            )}
                                             <span>Delete Post</span>
                                         </button>
                                     </div>
@@ -180,10 +231,48 @@ export default function Post({ post, currentUserId }: PostProps) {
                     </div>
 
                     <div className="relative z-10">
-                        {post?.text && (
-                            <p className="prose dark:prose-invert mb-3 whitespace-pre-wrap font-body">
-                                {post?.text}
-                            </p>
+                        {isEditing ? (
+                            <div className="mb-3 pointer-events-auto">
+                                <textarea
+                                    value={editText}
+                                    onChange={(e) =>
+                                        setEditText(e.target.value)
+                                    }
+                                    onKeyDown={(e) =>
+                                        e.key === "Enter" &&
+                                        !e.shiftKey &&
+                                        handleUpdate()
+                                    }
+                                    className="w-full bg-zinc-100 dark:bg-zinc-800 p-3 rounded-xl text-zinc-900 dark:text-white resize-none focus:outline-none"
+                                    rows={3}
+                                    autoFocus
+                                />
+                                <div className="flex justify-end gap-2 mt-2">
+                                    <button
+                                        onClick={() => setIsEditing(false)}
+                                        className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 cursor-pointer"
+                                    >
+                                        <X className="w-4 h-4 cursor-pointer" />
+                                    </button>
+                                    <button
+                                        onClick={handleUpdate}
+                                        disabled={isUpdating}
+                                        className="p-2 rounded-lg bg-blue-600 text-white cursor-pointer disabled:opacity-50"
+                                    >
+                                        {isUpdating ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Check className="w-4 h-4 cursor-pointer" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            post?.text && (
+                                <p className="prose dark:prose-invert mb-3 whitespace-pre-wrap font-body">
+                                    {post?.text}
+                                </p>
+                            )
                         )}
                     </div>
 

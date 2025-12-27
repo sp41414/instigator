@@ -126,6 +126,11 @@ export default function HomePage() {
                             <textarea
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
+                                onKeyDown={(e) =>
+                                    e.key === "Enter" &&
+                                    !e.shiftKey &&
+                                    handleSubmit(e)
+                                }
                                 placeholder="What's happening?"
                                 className="w-full bg-transparent text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 resize-none focus:outline-none text-lg"
                                 rows={3}
