@@ -6,6 +6,16 @@ Instigator is a Full Stack Microblogging Social Media Website
 
 ---
 
+## 📋 Table of Contents
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Tech Stack](#tech-stack)
+  - [Backend](#backend)
+  - [Frontend](#frontend)
+- [Getting Started](#getting-started)
+
+---
+
 ## Features
 
 ### **It includes:**
@@ -14,6 +24,8 @@ Instigator is a Full Stack Microblogging Social Media Website
 - **Customizable Profiles:** A profile with customization in user profile picture, about me, email, and password. The user profile contains the user's posts, post count, following count, followers count, username, profile picture and about me.
 - **Content Management:** Creating, updating, deleting, liking, and commenting on posts, same functionality for comments (Creating, updating, deleting, and liking), with the ability to upload any file as a post embed up to 4 with a 4.5MB vercel limit
 - **User Settings:** Settings with the ability to customize light/dark/system mode, logout, and delete the account
+
+## Screenshots
 
 <table>
   <tr>
@@ -51,7 +63,7 @@ Instigator is a Full Stack Microblogging Social Media Website
 - TypeScript
 - Tailwind CSS
 
-## Steps
+## Getting Started
 
 1. **Clone the repository:**
 ```bash
