@@ -452,7 +452,7 @@ export const deleteUser = [
                 httpOnly: true,
                 signed: true,
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
+                sameSite: "none",
             });
             return res.json({
                 success: true,

@@ -68,7 +68,7 @@ export const login = [
                 res.cookie("token", token, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === "production",
-                    sameSite: "strict",
+                    sameSite: "none",
                     maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
                     signed: true,
                 });
@@ -154,7 +154,7 @@ export const signup = [
             res.cookie("token", token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
+                sameSite: "none",
                 maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
                 signed: true,
             });
@@ -177,7 +177,7 @@ export const logout = (req: Request, res: Response) => {
         httpOnly: true,
         signed: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "none",
     });
     res.json({
         success: true,
@@ -276,7 +276,7 @@ export const guestLogin = async (
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            sameSite: "none",
             maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
             signed: true,
         });
