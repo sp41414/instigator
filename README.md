@@ -8,12 +8,19 @@ Instigator is a Full Stack Microblogging Social Media Website
 
 ## Features
 
-It includes:
+### **It includes:**
 - **Authorization:** with **Passport.js** JWT and google OAuth (commented out, ready for ocnfig) and a Guest login (seed script as user ID 1)
 - **Social functionality**: User follow, unfollow, follow back, block functionality
 - **Customizable Profiles:** A profile with customization in user profile picture, about me, email, and password. The user profile contains the user's posts, post count, following count, followers count, username, profile picture and about me.
 - **Content Management:** Creating, updating, deleting, liking, and commenting on posts, same functionality for comments (Creating, updating, deleting, and liking), with the ability to upload any file as a post embed up to 4 with a 4.5MB vercel limit
 - **User Settings:** Settings with the ability to customize light/dark/system mode, logout, and delete the account
+
+<p align="center">
+  <img src="/resources/image1.png" width="22%" />
+  <img src="/resources/image2.png" width="22%" />
+  <img src="/resources/image3.png" width="22%" />
+  <img src="/resources/image4.png" width="22%" />
+</p>
 
 ## Tech Stack
 
