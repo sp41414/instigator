@@ -261,7 +261,7 @@ export default function LoginPage() {
                     </svg>
                     Continue with Google
                 </button>
-*/}
+                */}
 
                 <button
                     onClick={handleGuestLogin}
