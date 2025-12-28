@@ -13,7 +13,7 @@ export const useGuestLogin = () => {
         setError(null);
 
         try {
-            const response = await api.get(`/auth/guest-login`);
+            const response = await api.post(`/auth/guest-login`);
 
             dispatch({
                 type: "LOGIN_SUCCESS",
