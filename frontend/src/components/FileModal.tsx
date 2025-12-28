@@ -130,7 +130,7 @@ export default function FileModal({
                             <img
                                 src={fileUrl}
                                 alt={fileName || "Image"}
-                                className="max-w-full max-h-full object-contain"
+                                className="max-w-full max-h-full object-contain mx-auto"
                                 loading="lazy"
                             />
                         ) : fileType === "video" ? (
@@ -138,7 +138,7 @@ export default function FileModal({
                                 <video
                                     controls
                                     autoPlay
-                                    className="max-w-full max-h-[70vh] rounded-lg"
+                                    className="max-w-full max-h-[70vh] rounded-lg mx-auto"
                                     src={fileUrl}
                                 >
                                     Your browser does not support the video tag.

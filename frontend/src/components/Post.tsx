@@ -307,7 +307,7 @@ export default function Post({ post }: PostProps) {
                                             <img
                                                 src={url}
                                                 alt={`Post image ${index + 1}`}
-                                                className="rounded-xl max-w-full max-h-96 object-contain cursor-pointer"
+                                                className="rounded-xl max-w-full max-h-96 object-contain cursor-pointer mx-auto"
                                                 loading="lazy"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -332,7 +332,7 @@ export default function Post({ post }: PostProps) {
                                             >
                                                 <video
                                                     src={url}
-                                                    className="max-w-full max-h-96 object-contain rounded-xl"
+                                                    className="max-w-full max-h-96 object-contain rounded-xl mx-auto"
                                                     controls={false}
                                                 />
                                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
@@ -405,3 +405,4 @@ export default function Post({ post }: PostProps) {
         </article>
     );
 }
+
