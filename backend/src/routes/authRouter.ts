@@ -40,7 +40,17 @@ authRouter.get(
             partitioned: process.env.NODE_ENV === "production",
         });
 
-        res.redirect(303, process.env.FRONTEND_URL! + "/");
+        res.status(200).send(`
+              <html>
+                <head>
+                  <meta http-equiv="refresh" content="0;url=${process.env.FRONTEND_URL}/" />
+                </head>
+                <body>
+                  <p>Redirecting you back...</p>
+                  <script>window.location.href = "${process.env.FRONTEND_URL}/";</script>
+                </body>
+              </html>
+        `);
     },
 );
 
@@ -51,6 +61,6 @@ authRouter.post("/logout", logout);
 authRouter.post("/setup-username", ...setupUsername);
 
 // guest login
-authRouter.get("/guest-login", guestLogin);
+authRouter.post("/guest-login", guestLogin);
 
 export default authRouter;
