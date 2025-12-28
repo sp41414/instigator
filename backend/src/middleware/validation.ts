@@ -178,6 +178,7 @@ export const validateUpdateUser = [
         ),
     body("password")
         .trim()
+        .optional()
         .isLength({ min: 8, max: 128 })
         .withMessage("Password must be between 8 and 128 characters long")
         .matches(/^[a-zA-Z0-9!@#$%^&*]{8,128}$/)
