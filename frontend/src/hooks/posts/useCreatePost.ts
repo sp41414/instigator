@@ -6,8 +6,19 @@ import { api } from "../../utils/axios";
 export const useCreatePost = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // vercel limit, backend actually has 8MB
+    const LIMIT = 4.5 * 1024 * 1024;
 
     const createPost = async (text: string, files: File[]) => {
+        const totalSize =
+            files.reduce((acc, file) => acc + file.size, 0) +
+            new Blob([text]).size;
+
+        if (totalSize > LIMIT) {
+            setError("Total size exceeds 4MB limit.");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 

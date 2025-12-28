@@ -9,7 +9,11 @@ import { useCreatePost } from "../../hooks/posts/useCreatePost";
 
 export default function HomePage() {
     const { feed, getFeed, loadMore, error, isLoading, hasMore } = useGetFeed();
-    const { createPost, isLoading: isPosting } = useCreatePost();
+    const {
+        createPost,
+        isLoading: isPosting,
+        error: postError,
+    } = useCreatePost();
     const { state } = useCheckAuth();
     const observerRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -123,6 +127,11 @@ export default function HomePage() {
                             />
                         )}
                         <div className="flex-1 min-w-0">
+                            {postError && (
+                                <div className="text-center text-red-600 dark:text-red-400">
+                                    {postError}
+                                </div>
+                            )}
                             <textarea
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
@@ -162,6 +171,12 @@ export default function HomePage() {
                                 </div>
                             )}
 
+                            <p
+                                className={`text-end mb-4 ${text.length >= 400 ? "text-red-600 dark:text-red-400" : "text-zinc-600 dark:text-zinc-400"}`}
+                            >
+                                {`${text.length}/400`}
+                            </p>
+
                             <div className="flex items-center justify-between mt-3">
                                 <div className="flex items-center gap-2">
                                     <input
@@ -184,18 +199,21 @@ export default function HomePage() {
                                         <Paperclip className="w-5 h-5" />
                                     </button>
                                 </div>
-                                <button
-                                    disabled={
-                                        (!text.trim() && files.length === 0) ||
-                                        isPosting
-                                    }
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2 transition-colors"
-                                >
-                                    {isPosting && (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    )}
-                                    Post
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        disabled={
+                                            (!text.trim() &&
+                                                files.length === 0) ||
+                                            isPosting
+                                        }
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2 transition-colors"
+                                    >
+                                        {isPosting && (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        )}
+                                        Post
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </form>

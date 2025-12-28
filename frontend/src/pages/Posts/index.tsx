@@ -21,7 +21,11 @@ export default function PostPage() {
         error,
         hasMore,
     } = useGetPost();
-    const { createComment, isLoading: isCommenting } = useCreateComment();
+    const {
+        createComment,
+        isLoading: isCommenting,
+        error: commentError,
+    } = useCreateComment();
     const { state } = useAuth();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -153,6 +157,11 @@ export default function PostPage() {
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
+                                {commentError && (
+                                    <div className="text-center text-red-600 dark:text-red-400">
+                                        {commentError}
+                                    </div>
+                                )}
                                 <textarea
                                     value={commentText}
                                     onChange={(e) =>
@@ -193,6 +202,12 @@ export default function PostPage() {
                                         ))}
                                     </div>
                                 )}
+
+                                <p
+                                    className={`text-end mb-4 ${commentText.length >= 400 ? "text-red-600 dark:text-red-400" : "text-zinc-600 dark:text-zinc-400"}`}
+                                >
+                                    {`${commentText.length}/400`}
+                                </p>
 
                                 <div className="flex items-center justify-between mt-2">
                                     <div className="flex items-center gap-2">
