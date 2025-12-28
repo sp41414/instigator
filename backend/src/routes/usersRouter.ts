@@ -5,6 +5,7 @@ import {
     updateProfile,
     deleteUser,
     updateProfilePicture,
+    getUsers,
 } from "../controllers/usersController";
 import multer from "multer";
 
@@ -18,6 +19,7 @@ const upload = multer({
     },
 });
 
+usersRouter.get("/", ...getUsers);
 usersRouter.get("/me", ...getProfile);
 usersRouter.get("/:id", ...getUserProfile);
 usersRouter.put("/me", ...updateProfile);

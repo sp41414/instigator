@@ -40,6 +40,7 @@ export const getProfile = [
                     email: true,
                     profile_picture_url: true,
                     aboutMe: true,
+                    createdAt: true,
                     _count: {
                         select: {
                             posts: true,
@@ -104,10 +105,26 @@ export const getProfile = [
                     id: true,
                     text: true,
                     createdAt: true,
+                    file_urls: true,
                     _count: {
                         select: {
                             comments: true,
                             likes: true,
+                        },
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            profile_picture_url: true,
+                        },
+                    },
+                    likes: {
+                        where: {
+                            userId: req.user!.id,
+                        },
+                        select: {
+                            id: true,
                         },
                     },
                 },
@@ -175,6 +192,7 @@ export const getUserProfile = [
                     username: true,
                     profile_picture_url: true,
                     aboutMe: true,
+                    createdAt: true,
                     _count: {
                         select: {
                             posts: true,
@@ -239,10 +257,26 @@ export const getUserProfile = [
                     id: true,
                     text: true,
                     createdAt: true,
+                    file_urls: true,
                     _count: {
                         select: {
                             comments: true,
                             likes: true,
+                        },
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            profile_picture_url: true,
+                        },
+                    },
+                    likes: {
+                        where: {
+                            userId: req.user!.id,
+                        },
+                        select: {
+                            id: true,
                         },
                     },
                 },
@@ -254,6 +288,15 @@ export const getUserProfile = [
                 nextCursor = lastPost!.id;
             }
 
+            const followStatus = await prisma.follow.findFirst({
+                where: {
+                    OR: [
+                        { senderId: req.user!.id, recipientId: userId },
+                        { senderId: userId, recipientId: req.user!.id },
+                    ],
+                },
+            });
+
             return res.json({
                 success: true,
                 message: "User profile fetched",
@@ -261,6 +304,7 @@ export const getUserProfile = [
                     user: userProfile,
                     posts,
                     nextCursor,
+                    followStatus,
                 },
             });
         } catch (err) {
@@ -486,6 +530,116 @@ export const updateProfilePicture = [
                 message: "Successfully updated profile picture",
                 data: {
                     url: publicUrl,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+];
+
+export const getUsers = [
+    authenticateJWT,
+    ...validatePaginationQuery,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        const errs = validationResult(req);
+        if (!errs.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: errs.array(),
+                error: {
+                    code: "BAD_REQUEST",
+                    timestamp: new Date().toISOString(),
+                },
+            });
+        }
+
+        const { limit = 20, cursor, search } = matchedData(req);
+
+        try {
+            const users = await prisma.user.findMany({
+                where: {
+                    NOT: {
+                        id: req.user!.id,
+                    },
+                    ...(search && {
+                        username: {
+                            contains: search,
+                            mode: "insensitive",
+                        },
+                    }),
+                },
+                take: limit + 1,
+                ...(cursor && {
+                    skip: 1,
+                    cursor: {
+                        id: parseInt(cursor),
+                    },
+                }),
+                orderBy: {
+                    username: "asc",
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    profile_picture_url: true,
+                    aboutMe: true,
+                    _count: {
+                        select: {
+                            posts: true,
+                            sentFollows: {
+                                where: {
+                                    OR: [
+                                        { status: "ACCEPTED" },
+                                        { status: "PENDING" },
+                                    ],
+                                },
+                            },
+                            receivedFollows: {
+                                where: {
+                                    OR: [
+                                        { status: "ACCEPTED" },
+                                        { status: "PENDING" },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            let nextCursor: number | undefined;
+            if (users.length > limit) {
+                const lastUser = users.pop();
+                nextCursor = lastUser!.id;
+            }
+
+            const usersWithStatus = await Promise.all(
+                users.map(async (user) => {
+                    const followStatus = await prisma.follow.findFirst({
+                        where: {
+                            OR: [
+                                {
+                                    senderId: req.user!.id,
+                                    recipientId: user.id,
+                                },
+                                {
+                                    senderId: user.id,
+                                    recipientId: req.user!.id,
+                                },
+                            ],
+                        },
+                    });
+                    return { ...user, followStatus };
+                }),
+            );
+
+            return res.json({
+                success: true,
+                message: "Fetched users successfully",
+                data: {
+                    users: usersWithStatus,
+                    nextCursor,
                 },
             });
         } catch (err) {

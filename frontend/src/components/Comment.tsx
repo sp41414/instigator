@@ -1,35 +1,66 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import DefaultProfilePicture from "./DefaultProfilePicture";
-import { Heart, File, Play } from "lucide-react";
+import {
+    Heart,
+    File,
+    Play,
+    MoreVertical,
+    Edit,
+    Trash2,
+    Loader2,
+    Check,
+    X,
+} from "lucide-react";
 import FileModal from "./FileModal";
 import { useLikeComment } from "../hooks/posts/useLikeComment";
 import type { Comment as CommentType } from "../hooks/posts/useGetPost";
 import { useAuth } from "../hooks/auth/useAuth";
+import { useUpdateComment } from "../hooks/posts/useUpdateComment";
+import { useDeleteComment } from "../hooks/posts/useDeleteComment";
 
 interface CommentProps {
     comment: CommentType;
     postId: string;
 }
 
-export default function Comment({
-    comment,
-    postId,
-}: CommentProps) {
+export default function Comment({ comment, postId }: CommentProps) {
     const { state } = useAuth();
     const currentUserId = state.user?.id;
-    
+
     const [isLiked, setIsLiked] = useState(comment.likes.length > 0);
     const [likeCount, setLikeCount] = useState(comment._count.likes);
+    const [displayedText, setDisplayedText] = useState(comment.text || "");
+
+    const [prevComment, setPrevComment] = useState(comment);
+    if (comment !== prevComment) {
+        setPrevComment(comment);
+        setIsLiked(comment.likes.length > 0);
+        setLikeCount(comment._count.likes);
+        setDisplayedText(comment.text || "");
+    }
+
     const [selectedFile, setSelectedFile] = useState<{
         url: string;
-        type: string;
+        type: "image" | "video" | "audio" | "document" | "file";
         name?: string;
     } | null>(null);
     const { toggleLikeComment } = useLikeComment();
     const [modalOpen, setModalOpen] = useState(false);
 
-    const openFileModal = (url: string, type: string, name?: string) => {
+    const [showOptions, setShowOptions] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(displayedText);
+    const [isDeleted, setIsDeleted] = useState(false);
+
+    const { updateComment, isLoading: isUpdating } = useUpdateComment();
+    const { deleteComment, isLoading: isDeleting } = useDeleteComment();
+
+    const openFileModal = (
+        url: string,
+        type: "image" | "video" | "audio" | "document" | "file",
+        name?: string,
+    ) => {
         setSelectedFile({ url, type, name });
         setModalOpen(true);
     };
@@ -99,6 +130,30 @@ export default function Comment({
         }
     };
 
+    const handleDelete = async () => {
+        try {
+            await deleteComment(postId, comment.id);
+            setIsDeleted(true);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleUpdate = async () => {
+        if (!editText.trim()) return;
+        try {
+            await updateComment(postId, comment.id, editText);
+            setDisplayedText(editText);
+            setIsEditing(false);
+            setShowOptions(false);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    if (isDeleted) return null;
+    const isOwner = currentUserId === comment.user.id;
+
     return (
         <article className="relative border-b border-zinc-200 dark:border-zinc-800 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors duration-200">
             <div className="flex items-start gap-3 relative z-10">
@@ -130,13 +185,90 @@ export default function Comment({
                                 {formatTime(comment.createdAt)}
                             </span>
                         </div>
+
+                        {isOwner && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowOptions(!showOptions)}
+                                    className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer"
+                                >
+                                    <MoreVertical className="w-4 h-4" />
+                                </button>
+
+                                {showOptions && (
+                                    <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg py-2 z-50">
+                                        <button
+                                            onClick={() => {
+                                                setEditText(displayedText);
+                                                setIsEditing(true);
+                                                setShowOptions(false);
+                                            }}
+                                            className="flex items-center gap-3 w-full px-4 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                            <span>Edit Comment</span>
+                                        </button>
+                                        <button
+                                            onClick={handleDelete}
+                                            disabled={isDeleting}
+                                            className="flex items-center gap-3 w-full px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer disabled:opacity-50"
+                                        >
+                                            {isDeleting ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="w-4 h-4" />
+                                            )}
+                                            <span>Delete Comment</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="relative z-10">
-                        {comment?.text && (
-                            <p className="prose dark:prose-invert mb-3 whitespace-pre-wrap font-body">
-                                {comment?.text}
-                            </p>
+                        {isEditing ? (
+                            <div className="mb-3">
+                                <textarea
+                                    value={editText}
+                                    onChange={(e) =>
+                                        setEditText(e.target.value)
+                                    }
+                                    onKeyDown={(e) =>
+                                        e.key === "Enter" &&
+                                        !e.shiftKey &&
+                                        handleUpdate()
+                                    }
+                                    className="w-full bg-zinc-100 dark:bg-zinc-800 p-3 rounded-xl text-zinc-900 dark:text-white resize-none focus:outline-none"
+                                    rows={2}
+                                    autoFocus
+                                />
+                                <div className="flex justify-end gap-2 mt-2">
+                                    <button
+                                        onClick={() => setIsEditing(false)}
+                                        className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 cursor-pointer"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={handleUpdate}
+                                        disabled={isUpdating}
+                                        className="p-2 rounded-lg bg-blue-600 text-white cursor-pointer disabled:opacity-50"
+                                    >
+                                        {isUpdating ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Check className="w-4 h-4" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            displayedText && (
+                                <p className="prose dark:prose-invert mb-3 whitespace-pre-wrap font-body">
+                                    {displayedText}
+                                </p>
+                            )
                         )}
                     </div>
 
@@ -235,7 +367,7 @@ export default function Comment({
                 isOpen={modalOpen}
                 onClose={closeModal}
                 fileUrl={selectedFile?.url || ""}
-                fileType={(selectedFile?.type as any) || "file"}
+                fileType={selectedFile?.type || "file"}
                 fileName={selectedFile?.name}
             />
         </article>

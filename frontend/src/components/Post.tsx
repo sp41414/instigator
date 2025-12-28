@@ -44,22 +44,36 @@ export default function Post({ post }: PostProps) {
 
     const [isLiked, setIsLiked] = useState(post.likes.length > 0);
     const [likeCount, setLikeCount] = useState(post._count.likes);
+    const [displayedText, setDisplayedText] = useState(post.text || "");
+
+    const [prevPost, setPrevPost] = useState(post);
+    if (post !== prevPost) {
+        setPrevPost(post);
+        setIsLiked(post.likes.length > 0);
+        setLikeCount(post._count.likes);
+        setDisplayedText(post.text || "");
+    }
+
     const [showOptions, setShowOptions] = useState(false);
     const [selectedFile, setSelectedFile] = useState<{
         url: string;
-        type: string;
+        type: "image" | "video" | "audio" | "document" | "file";
         name?: string;
     } | null>(null);
     const { deletePost, isLoading: isDeleting } = useDeletePost();
     const { updatePost, isLoading: isUpdating } = useUpdatePost();
     const [isEditing, setIsEditing] = useState(false);
-    const [editText, setEditText] = useState(post.text || "");
+    const [editText, setEditText] = useState(displayedText);
     const [isDeleted, setIsDeleted] = useState(false);
     const { toggleLike } = useLikePost();
 
     const [modalOpen, setModalOpen] = useState(false);
 
-    const openFileModal = (url: string, type: string, name?: string) => {
+    const openFileModal = (
+        url: string,
+        type: "image" | "video" | "audio" | "document" | "file",
+        name?: string,
+    ) => {
         setSelectedFile({ url, type, name });
         setModalOpen(true);
     };
@@ -144,7 +158,7 @@ export default function Post({ post }: PostProps) {
         if (!editText.trim()) return;
         try {
             await updatePost(post.id, editText);
-            post.text = editText;
+            setDisplayedText(editText);
             setIsEditing(false);
             setShowOptions(false);
         } catch (err) {
@@ -209,6 +223,7 @@ export default function Post({ post }: PostProps) {
                                     <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg py-2 z-50">
                                         <button
                                             onClick={() => {
+                                                setEditText(displayedText);
                                                 setIsEditing(true);
                                                 setShowOptions(false);
                                             }}
@@ -273,9 +288,9 @@ export default function Post({ post }: PostProps) {
                                 </div>
                             </div>
                         ) : (
-                            post?.text && (
+                            displayedText && (
                                 <p className="prose dark:prose-invert mb-3 whitespace-pre-wrap font-body">
-                                    {post?.text}
+                                    {displayedText}
                                 </p>
                             )
                         )}
@@ -384,7 +399,7 @@ export default function Post({ post }: PostProps) {
                 isOpen={modalOpen}
                 onClose={closeModal}
                 fileUrl={selectedFile?.url || ""}
-                fileType={(selectedFile?.type as any) || "file"}
+                fileType={selectedFile?.type || "file"}
                 fileName={selectedFile?.name}
             />
         </article>
