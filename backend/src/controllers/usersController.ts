@@ -450,7 +450,6 @@ export const deleteUser = [
 
             res.clearCookie("token", {
                 httpOnly: true,
-                signed: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "none",
             });

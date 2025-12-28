@@ -36,7 +36,6 @@ authRouter.get(
             secure: process.env.NODE_ENV === "production",
             sameSite: "none",
             maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
-            signed: true,
         });
 
         res.redirect(`${process.env.FRONTEND_URL}/`);

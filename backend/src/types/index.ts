@@ -5,12 +5,6 @@ export interface JwtPayload extends BaseJwtPayload {
     id: number;
 }
 
-export interface Request extends ExpressRequest {
-    signedCookies: {
-        [key: string]: any;
-    };
-}
-
 export interface AuthenticatedRequest extends ExpressRequest {
     user?: {
         id: number;

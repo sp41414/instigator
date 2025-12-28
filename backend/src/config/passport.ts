@@ -3,14 +3,15 @@ import {
     Strategy as JwtStrategy,
     StrategyOptionsWithoutRequest,
 } from "passport-jwt";
+import { Request } from "express";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import prisma from "../db/prisma.js";
-import { JwtPayload, Request } from "../types/index.js";
+import { JwtPayload } from "../types/index.js";
 
 const extractCookie = (req: Request) => {
     let token = null;
-    if (req && req.signedCookies) {
-        token = req.signedCookies["token"];
+    if (req && req.cookies) {
+        token = req.cookies["token"];
     }
     return token;
 };
