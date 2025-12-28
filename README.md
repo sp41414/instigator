@@ -15,14 +15,28 @@ Instigator is a Full Stack Microblogging Social Media Website
 - **Content Management:** Creating, updating, deleting, liking, and commenting on posts, same functionality for comments (Creating, updating, deleting, and liking), with the ability to upload any file as a post embed up to 4 with a 4.5MB vercel limit
 - **User Settings:** Settings with the ability to customize light/dark/system mode, logout, and delete the account
 
-<p align="center">
-  <img src="/resources/image1.png" width="50%" />
-  <img src="/resources/image2.png" width="50%" />
-</p>
-<p align="center">
-    <img src="/resources/image3.png" width="50%" />
-    <img src="/resources/image4.png" width="50%" />
-</p>
+<table>
+  <tr>
+    <td width="50%">
+      <img src="/resources/image1.png" alt="Home Feed" width="100%" />
+      <p align="center"><i>Home Feed</i></p>
+    </td>
+    <td width="50%">
+      <img src="/resources/image2.png" alt="User Index" width="100%" />
+      <p align="center"><i>Users Index</i></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="/resources/image3.png" alt="Settings" width="100%" />
+      <p align="center"><i>Settings</i></p>
+    </td>
+    <td width="50%">
+      <img src="/resources/image4.png" alt="User Profile" width="100%" />
+      <p align="center"><i>User Profile</i></p>
+    </td>
+  </tr>
+</table>
 
 ## Tech Stack
 
