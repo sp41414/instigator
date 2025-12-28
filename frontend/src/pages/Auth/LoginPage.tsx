@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useGoogleLogin } from "../../hooks/auth/useGoogleLogin";
+// import { useGoogleLogin } from "../../hooks/auth/useGoogleLogin";
 import { useLogin } from "../../hooks/auth/useLogin";
 import { Link, useNavigate } from "react-router";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
@@ -18,7 +18,7 @@ export default function LoginPage() {
         username: false,
         password: false,
     });
-    const { loginGoogle } = useGoogleLogin();
+    // const { loginGoogle } = useGoogleLogin();
     const { guestLogin } = useGuestLogin();
     const { login, error, isLoading } = useLogin();
     const navigate = useNavigate();
