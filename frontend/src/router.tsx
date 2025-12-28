@@ -5,45 +5,46 @@ import SignupPage from "./pages/Auth/SignupPage";
 import SetupUsernamePage from "./pages/Auth/SetupUsernamePage";
 import HomePage from "./pages/Home";
 import PostPage from "./pages/Posts";
+import UsersPage from "./pages/Users";
+import ProfilePage from "./pages/Profile";
+import SettingsPage from "./pages/Settings";
+import FollowsPage from "./pages/Follows";
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <RootLayout />,
-        // errorElement: <ErrorPage />,
         children: [
             {
                 index: true,
                 element: <HomePage />,
             },
             {
-                path: "posts",
-            },
-            {
-                path: "profile",
-            },
-            {
                 path: "users",
+                element: <UsersPage />,
             },
             {
                 path: "follows",
+                element: <FollowsPage />,
             },
             {
-                path: "profile/:id?",
+                path: "profile",
+                element: <ProfilePage />,
+            },
+            {
+                path: "profile/:id",
+                element: <ProfilePage />,
             },
             {
                 path: "posts/:id",
                 element: <PostPage />,
             },
             {
-                path: "comments/:id",
-            },
-            {
                 path: "settings",
+                element: <SettingsPage />,
             },
             {
                 path: "*",
-                // not found
             },
         ],
     },

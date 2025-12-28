@@ -415,6 +415,17 @@ export const deleteUser = [
     authenticateJWT,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         try {
+            if (req.user!.id === 1) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Cannot delete the Guest user",
+                    error: {
+                        code: "FORBIDDEN",
+                        timestamp: new Date().toISOString(),
+                    },
+                });
+            }
+
             const deletedUser = await prisma.user.delete({
                 where: {
                     id: req.user!.id,

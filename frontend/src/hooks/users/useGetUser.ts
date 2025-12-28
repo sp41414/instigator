@@ -11,8 +11,20 @@ interface UserProfile {
         profile_picture_url?: string;
         email?: string;
         aboutMe?: string;
+        _count?: {
+            posts: number;
+            sentFollows: number;
+            receivedFollows: number;
+        };
     };
     posts: Post[];
+    nextCursor?: string | null;
+    followStatus?: {
+        id: string;
+        status: "PENDING" | "ACCEPTED" | "REFUSED" | "BLOCKED";
+        senderId: number;
+        recipientId: number;
+    } | null;
 }
 
 export function useGetUser() {
@@ -20,25 +32,40 @@ export function useGetUser() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    async function getUser(id?: number) {
+    async function getUser(id?: number, cursor?: string, limit: number = 10) {
         setLoading(true);
         setError(null);
 
         try {
-            if (!id || isNaN(id) || id <= 0) {
-                const response = await axios.get(`${API_URL}/users/me`, {
-                    withCredentials: true,
-                });
-                setUser(response.data.data);
-                return;
+            const params = new URLSearchParams();
+            params.append("limit", limit.toString());
+            if (cursor) {
+                params.append("cursor", cursor);
             }
-            const response = await axios.get(`${API_URL}/users/${id}`, {
-                withCredentials: true,
-            });
 
-            setUser(response.data.data);
+            let response;
+            if (!id || isNaN(id) || id <= 0) {
+                response = await axios.get(
+                    `${API_URL}/users/me?${params.toString()}`,
+                    {
+                        withCredentials: true,
+                    },
+                );
+            } else {
+                response = await axios.get(
+                    `${API_URL}/users/${id}?${params.toString()}`,
+                    {
+                    withCredentials: true,
+                    },
+                );
+            }
+
+            const data = response.data.data;
+            setUser(data);
+            return data;
         } catch (err: any) {
             setError(parseErrorMessage(err.response?.data.message));
+            return null;
         } finally {
             setLoading(false);
         }
