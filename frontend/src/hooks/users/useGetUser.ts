@@ -1,8 +1,7 @@
-import axios from "axios";
 import { useState } from "react";
 import { parseErrorMessage } from "../../utils/parseError";
-import { API_URL } from "../auth/useAuth";
 import type { Post } from "../posts/useGetFeed";
+import { api } from "../../utils/axios";
 
 interface UserProfile {
     user: {
@@ -45,19 +44,9 @@ export function useGetUser() {
 
             let response;
             if (!id || isNaN(id) || id <= 0) {
-                response = await axios.get(
-                    `${API_URL}/users/me?${params.toString()}`,
-                    {
-                        withCredentials: true,
-                    },
-                );
+                response = await api.get(`/users/me?${params.toString()}`);
             } else {
-                response = await axios.get(
-                    `${API_URL}/users/${id}?${params.toString()}`,
-                    {
-                    withCredentials: true,
-                    },
-                );
+                response = await api.get(`/users/${id}?${params.toString()}`);
             }
 
             const data = response.data.data;

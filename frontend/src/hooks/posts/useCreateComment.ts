@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useCreateComment = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -23,8 +22,8 @@ export const useCreateComment = () => {
                 });
             }
 
-            const response = await axios.post(
-                `${API_URL}/posts/${postId}/comments`,
+            const response = await api.post(
+                `/posts/${postId}/comments`,
                 formData,
                 {
                     withCredentials: true,

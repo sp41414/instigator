@@ -1,8 +1,7 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
 import { useAuth } from "../auth/useAuth";
+import { api } from "../../utils/axios";
 
 export const useUpdateProfile = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -19,11 +18,7 @@ export const useUpdateProfile = () => {
         setError(null);
 
         try {
-            const response = await axios.put(
-                `${API_URL}/users/me`,
-                data,
-                { withCredentials: true },
-            );
+            const response = await api.put(`/users/me`, data);
 
             if (response.data.data.user) {
                 dispatch({

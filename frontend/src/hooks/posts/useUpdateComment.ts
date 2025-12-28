@@ -1,20 +1,22 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useUpdateComment = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const updateComment = async (postId: string, commentId: string, text: string) => {
+    const updateComment = async (
+        postId: string,
+        commentId: string,
+        text: string,
+    ) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await axios.put(
-                `${API_URL}/posts/${postId}/comments/${commentId}`,
+            const response = await api.put(
+                `/posts/${postId}/comments/${commentId}`,
                 { text },
-                { withCredentials: true },
             );
             return response.data.data.comment;
         } catch (err: any) {

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useUpdateFollowStatus = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -15,17 +14,14 @@ export const useUpdateFollowStatus = () => {
         setError(null);
 
         try {
-            const response = await axios.patch(
-                `${API_URL}/follows/${followId}`,
-                { status },
-                { withCredentials: true },
-            );
+            const response = await api.patch(`/follows/${followId}`, {
+                status,
+            });
 
             return response.data.data.follow;
         } catch (err: any) {
             const errorMessage = parseErrorMessage(
-                err.response?.data?.message ||
-                    "Failed to update follow status",
+                err.response?.data?.message || "Failed to update follow status",
             );
             setError(errorMessage);
             throw new Error(errorMessage);

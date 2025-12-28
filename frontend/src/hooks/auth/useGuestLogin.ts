@@ -1,7 +1,7 @@
-import axios from "axios";
 import { useState } from "react";
-import { useAuth, API_URL } from "./useAuth";
+import { useAuth } from "./useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useGuestLogin = () => {
     const [error, setError] = useState<string | null>(null);
@@ -13,12 +13,7 @@ export const useGuestLogin = () => {
         setError(null);
 
         try {
-            const response = await axios.get(`${API_URL}/auth/guest-login`, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                withCredentials: true,
-            });
+            const response = await api.get(`/auth/guest-login`);
 
             dispatch({
                 type: "LOGIN_SUCCESS",

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useUpdatePost = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -11,11 +10,7 @@ export const useUpdatePost = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await axios.put(
-                `${API_URL}/posts/${postId}`,
-                { text },
-                { withCredentials: true },
-            );
+            const response = await api.put(`/posts/${postId}`, { text });
             return response.data.data.post;
         } catch (err: any) {
             setError(parseErrorMessage(err.response?.data.message));

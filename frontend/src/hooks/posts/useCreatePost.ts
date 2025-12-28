@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 import type { Post } from "./useGetFeed";
 
 export const useCreatePost = () => {
@@ -20,12 +19,7 @@ export const useCreatePost = () => {
         });
 
         try {
-            const response = await axios.post(`${API_URL}/posts`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-                withCredentials: true,
-            });
+            const response = await api.post(`/posts`, formData);
 
             return response.data.data.post as Post;
         } catch (err: any) {

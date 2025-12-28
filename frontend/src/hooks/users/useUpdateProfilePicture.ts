@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 import { useAuth } from "../auth/useAuth";
 
 export const useUpdateProfilePicture = () => {
@@ -17,16 +16,7 @@ export const useUpdateProfilePicture = () => {
             const formData = new FormData();
             formData.append("file", file);
 
-            const response = await axios.put(
-                `${API_URL}/users/me/avatar`,
-                formData,
-                {
-                    withCredentials: true,
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                },
-            );
+            const response = await api.put(`/users/me/avatar`, formData);
 
             if (response.data.data.url) {
                 dispatch({

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useBlockUser = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -12,11 +11,7 @@ export const useBlockUser = () => {
         setError(null);
 
         try {
-            const response = await axios.post(
-                `${API_URL}/follows/${userId}/block`,
-                {},
-                { withCredentials: true },
-            );
+            const response = await api.post(`/follows/${userId}/block`, {});
 
             return response.data.data.follow;
         } catch (err: any) {

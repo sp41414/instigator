@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useAuth, API_URL } from "./useAuth";
-import axios from "axios";
+import { useAuth } from "./useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useSignup = () => {
     const { dispatch } = useAuth();
@@ -13,16 +13,10 @@ export const useSignup = () => {
         setError(null);
 
         try {
-            const response = await axios.post(
-                `${API_URL}/auth/signup`,
-                { username, password },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    withCredentials: true,
-                },
-            );
+            const response = await api.post(`/auth/signup`, {
+                username,
+                password,
+            });
 
             dispatch({
                 type: "LOGIN_SUCCESS",

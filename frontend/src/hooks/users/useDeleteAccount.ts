@@ -1,8 +1,7 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
 import { useAuth } from "../auth/useAuth";
+import { api } from "../../utils/axios";
 
 export const useDeleteAccount = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -14,9 +13,7 @@ export const useDeleteAccount = () => {
         setError(null);
 
         try {
-            await axios.delete(`${API_URL}/users/me`, {
-                withCredentials: true,
-            });
+            await api.delete(`/users/me`);
 
             dispatch({ type: "LOGOUT" });
         } catch (err: any) {

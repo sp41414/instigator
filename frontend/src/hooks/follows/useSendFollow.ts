@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useSendFollow = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -12,8 +11,8 @@ export const useSendFollow = () => {
         setError(null);
 
         try {
-            const response = await axios.post(
-                `${API_URL}/follows`,
+            const response = await api.post(
+                `/follows`,
                 { recipientId },
                 { withCredentials: true },
             );

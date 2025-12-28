@@ -1,10 +1,10 @@
 import { Request, Response, Router } from "express";
 import {
-  login,
-  signup,
-  logout,
-  setupUsername,
-  guestLogin,
+    login,
+    signup,
+    logout,
+    setupUsername,
+    guestLogin,
 } from "../controllers/authController.js";
 import passport from "../config/passport.js";
 import jwt from "jsonwebtoken";
@@ -13,34 +13,34 @@ const authRouter = Router();
 
 // google OAuth
 authRouter.get(
-  "/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-    session: false,
-  })
+    "/google",
+    passport.authenticate("google", {
+        scope: ["profile", "email"],
+        session: false,
+    }),
 );
 authRouter.get(
-  "/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: `${process.env.FRONTEND_URL}/login?error=auth_failed`,
-    session: false,
-  }),
-  (req: Request, res: Response) => {
-    const user = req.user as { id: number; username: string };
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
-      expiresIn: "2d",
-    });
+    "/google/callback",
+    passport.authenticate("google", {
+        failureRedirect: `${process.env.FRONTEND_URL}/login?error=auth_failed`,
+        session: false,
+    }),
+    (req: Request, res: Response) => {
+        const user = req.user as { id: number; username: string };
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+            expiresIn: "2d",
+        });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
-      path: "/",
-    });
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
+            path: "/",
+        });
 
-    res.redirect(303, process.env.FRONTEND_URL! + "/");
-  }
+        res.redirect(303, process.env.FRONTEND_URL! + "/");
+    },
 );
 
 // normal login/signup with JWT

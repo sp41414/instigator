@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useAuth, API_URL } from "./useAuth";
+import { useAuth } from "./useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
-import axios from "axios";
+import { api } from "../../utils/axios";
 
 export const useSetupUsername = () => {
     const { dispatch } = useAuth();
@@ -13,16 +13,9 @@ export const useSetupUsername = () => {
         setError(null);
 
         try {
-            const response = await axios.post(
-                `${API_URL}/auth/setup-username`,
-                { username },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    withCredentials: true,
-                },
-            );
+            const response = await api.post(`/auth/setup-username`, {
+                username,
+            });
 
             dispatch({ type: "UPDATE_USER", payload: response.data.data.user });
             return response.data;

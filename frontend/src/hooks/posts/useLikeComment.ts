@@ -1,6 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
+import { api } from "../../utils/axios";
 
 export const useLikeComment = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -8,10 +7,8 @@ export const useLikeComment = () => {
     const toggleLikeComment = async (postId: string, commentId: string) => {
         setIsLoading(true);
         try {
-            const response = await axios.post(
-                `${API_URL}/posts/${postId}/comments/${commentId}/like`,
-                {},
-                { withCredentials: true },
+            const response = await api.post(
+                `/posts/${postId}/comments/${commentId}/like`,
             );
             return response.data.data.liked;
         } catch (err) {

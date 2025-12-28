@@ -1,6 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
+import { api } from "../../utils/axios";
 
 export const useLikePost = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -13,14 +12,10 @@ export const useLikePost = () => {
         setIsLoading(true);
         try {
             const url = isComment
-                ? `${API_URL}/posts/${postId}/comments/${commentId}/like`
-                : `${API_URL}/posts/${postId}/like`;
+                ? `/posts/${postId}/comments/${commentId}/like`
+                : `/posts/${postId}/like`;
 
-            const response = await axios.post(
-                url,
-                {},
-                { withCredentials: true },
-            );
+            const response = await api.post(url);
             return response.data.data.liked;
         } catch (err) {
             console.error("Like error:", err);

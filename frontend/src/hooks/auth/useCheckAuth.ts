@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useAuth, API_URL } from "./useAuth";
+import { useAuth } from "./useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
-import axios from "axios";
 import { useLocation, useNavigate } from "react-router";
+import { api } from "../../utils/axios";
 
 export const useCheckAuth = () => {
     const { state, dispatch } = useAuth();
@@ -17,9 +17,7 @@ export const useCheckAuth = () => {
             setError(null);
 
             try {
-                const response = await axios.get(`${API_URL}/users/me`, {
-                    withCredentials: true,
-                });
+                const response = await api.get(`/users/me`);
 
                 const user = response.data?.data.user;
 

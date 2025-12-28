@@ -1,8 +1,7 @@
 import { useState, useCallback } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
 import type { Post } from "./useGetFeed";
+import { api } from "../../utils/axios";
 
 export interface Comment {
     id: string;
@@ -47,11 +46,8 @@ export const useGetPost = () => {
                     params.append("cursor", cursor);
                 }
 
-                const response = await axios.get(
-                    `${API_URL}/posts/${postId}?${params.toString()}`,
-                    {
-                        withCredentials: true,
-                    },
+                const response = await api.get(
+                    `/posts/${postId}?${params.toString()}`,
                 );
 
                 const data = response.data.data;

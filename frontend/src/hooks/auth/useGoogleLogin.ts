@@ -1,4 +1,4 @@
-import { API_URL } from "./useAuth";
+import { API_URL } from "../../utils/axios";
 
 export const useGoogleLogin = () => {
     const loginGoogle = () => {

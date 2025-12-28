@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { API_URL, useAuth } from "./useAuth";
-import axios from "axios";
+import { useAuth } from "./useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useLogout = () => {
     const { dispatch } = useAuth();
@@ -13,11 +13,7 @@ export const useLogout = () => {
         setError(null);
 
         try {
-            const response = await axios.post(
-                `${API_URL}/auth/logout`,
-                {},
-                { withCredentials: true },
-            );
+            const response = await api.post(`/auth/logout`);
 
             dispatch({ type: "LOGOUT" });
             return response.data;

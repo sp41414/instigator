@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export interface FollowUser {
     id: number;
@@ -38,9 +37,7 @@ export const useGetFollows = () => {
         setError(null);
 
         try {
-            const response = await axios.get(`${API_URL}/follows`, {
-                withCredentials: true,
-            });
+            const response = await api.get(`/follows`);
 
             const data: GetFollowsResponse = response.data?.data;
             setFollows(data);

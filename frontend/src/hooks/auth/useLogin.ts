@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useState } from "react";
-import { useAuth, API_URL } from "./useAuth";
+import { useAuth } from "./useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useLogin = () => {
     const [error, setError] = useState<string | null>(null);
@@ -13,16 +14,10 @@ export const useLogin = () => {
         setError(null);
 
         try {
-            const response = await axios.post(
-                `${API_URL}/auth/login`,
-                { username, password },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    withCredentials: true,
-                },
-            );
+            const response = await api.post(`/auth/login`, {
+                username,
+                password,
+            });
 
             dispatch({
                 type: "LOGIN_SUCCESS",

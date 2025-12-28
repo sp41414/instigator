@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useDeleteFollow = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -12,10 +11,7 @@ export const useDeleteFollow = () => {
         setError(null);
 
         try {
-            const response = await axios.delete(
-                `${API_URL}/follows/${followId}`,
-                { withCredentials: true },
-            );
+            const response = await api.delete(`/follows/${followId}`);
 
             return response.data.data.follow;
         } catch (err: any) {

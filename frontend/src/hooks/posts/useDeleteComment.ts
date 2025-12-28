@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
 import { parseErrorMessage } from "../../utils/parseError";
+import { api } from "../../utils/axios";
 
 export const useDeleteComment = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -11,9 +10,8 @@ export const useDeleteComment = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await axios.delete(
-                `${API_URL}/posts/${postId}/comments/${commentId}`,
-                { withCredentials: true },
+            const response = await api.delete(
+                `/posts/${postId}/comments/${commentId}`,
             );
             return response.data;
         } catch (err: any) {
