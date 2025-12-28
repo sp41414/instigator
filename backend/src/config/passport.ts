@@ -4,8 +4,8 @@ import {
     StrategyOptionsWithoutRequest,
 } from "passport-jwt";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import prisma from "../db/prisma";
-import { JwtPayload, Request } from "../types";
+import prisma from "../db/prisma.js";
+import { JwtPayload, Request } from "../types/index.js";
 
 const extractCookie = (req: Request) => {
     let token = null;

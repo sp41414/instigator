@@ -5,7 +5,7 @@ import {
     updateFollowStatus,
     deleteFollow,
     blockUser,
-} from "../controllers/followController";
+} from "../controllers/followController.js";
 
 const followRouter = Router();
 

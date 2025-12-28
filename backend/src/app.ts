@@ -3,8 +3,8 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import passport from "./config/passport";
-import router from "./routes";
+import passport from "./config/passport.js";
+import router from "./routes/index.js";
 import rateLimit from "express-rate-limit";
 
 const app = express();

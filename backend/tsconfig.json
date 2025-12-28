@@ -1,10 +1,10 @@
 {
     "compilerOptions": {
         "target": "ES2022",
-        "module": "ESNext",
-        "moduleResolution": "bundler",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "outDir": "./dist",
-        "rootDir": "./src",
+        "rootDir": "./",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -17,6 +17,7 @@
     ],
     "exclude": [
         "node_modules",
-        "dist"
+        "dist",
+        "generated"
     ]
 }

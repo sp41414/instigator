@@ -2,7 +2,7 @@ export default async () => {
     process.env.NODE_ENV = "test";
     await import("dotenv/config");
 
-    const { PrismaClient } = await import("../../generated/prisma");
+    const { PrismaClient } = await import("../../generated/prisma/client.js");
     const { PrismaPg } = await import("@prisma/adapter-pg");
 
     const adapter = new PrismaPg({

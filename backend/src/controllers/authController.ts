@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import prisma from "../db/prisma";
+import prisma from "../db/prisma.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { matchedData, validationResult } from "express-validator";
@@ -7,9 +7,9 @@ import {
     validateUser,
     validateLogin,
     validateUsername,
-} from "../middleware/validation";
-import { authenticateJWT } from "../middleware/auth";
-import { AuthenticatedRequest } from "../types";
+} from "../middleware/validation.js";
+import { authenticateJWT } from "../middleware/auth.js";
+import { AuthenticatedRequest } from "../types/index.js";
 
 const SECRET = process.env.JWT_SECRET!;
 

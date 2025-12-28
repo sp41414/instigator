@@ -1,16 +1,16 @@
 import { NextFunction, Response } from "express";
-import prisma from "../db/prisma";
-import { AuthenticatedRequest } from "../types";
-import { authenticateJWT } from "../middleware/auth";
+import prisma from "../db/prisma.js";
+import { AuthenticatedRequest } from "../types/index.js";
+import { authenticateJWT } from "../middleware/auth.js";
 import { validationResult, matchedData } from "express-validator";
-import { FollowStatus } from "../../generated/prisma";
+import { FollowStatus } from "../../generated/prisma/client.js";
 import {
     validateLogin,
     validateSendFollow,
     validateUpdateFollow,
     validateBlockUser,
     validateDeleteFollow,
-} from "../middleware/validation";
+} from "../middleware/validation.js";
 
 const userSelect = {
     id: true,

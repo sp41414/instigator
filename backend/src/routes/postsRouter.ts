@@ -10,7 +10,7 @@ import {
     deleteComment,
     likePost,
     likeComment,
-} from "../controllers/postsController";
+} from "../controllers/postsController.js";
 import multer from "multer";
 
 const postsRouter = Router();

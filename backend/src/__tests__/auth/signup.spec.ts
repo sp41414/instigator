@@ -1,7 +1,7 @@
 import "dotenv/config";
 import request from "supertest";
-import { prisma } from "../setup";
-import app from "../../app";
+import { prisma } from "../setup.js";
+import app from "../../app.js";
 
 describe("POST /api/v1/auth/signup", () => {
     describe("successful signup", () => {

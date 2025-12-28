@@ -6,7 +6,7 @@ import {
     deleteUser,
     updateProfilePicture,
     getUsers,
-} from "../controllers/usersController";
+} from "../controllers/usersController.js";
 import multer from "multer";
 
 const usersRouter = Router();

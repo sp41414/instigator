@@ -1,9 +1,9 @@
 import "dotenv/config";
 import request from "supertest";
-import app from "../../app";
-import { prisma } from "../setup";
+import app from "../../app.js";
+import { prisma } from "../setup.js";
 import bcrypt from "bcryptjs";
-import { supabase } from "../../config/supabase";
+import { supabase } from "../../config/supabase.js";
 
 describe("user routes", () => {
     let authCookie: string;

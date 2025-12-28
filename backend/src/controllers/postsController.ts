@@ -1,7 +1,7 @@
-import prisma from "../db/prisma";
+import prisma from "../db/prisma.js";
 import { NextFunction, Response } from "express";
-import { authenticateJWT } from "../middleware/auth";
-import { AuthenticatedRequest } from "../types";
+import { authenticateJWT } from "../middleware/auth.js";
+import { AuthenticatedRequest } from "../types/index.js";
 import {
     body,
     validationResult,
@@ -20,8 +20,8 @@ import {
     validateDeleteComment,
     validateLikePost,
     validateLikeComment,
-} from "../middleware/validation";
-import { supabase } from "../config/supabase";
+} from "../middleware/validation.js";
+import { supabase } from "../config/supabase.js";
 import sanitize from "sanitize-html";
 
 const sanitizeOptions = {
@@ -525,7 +525,7 @@ export const deletePost = [
             }
 
             if (post.file_urls && post.file_urls.length > 0) {
-                const pathsToDelete = post.file_urls.map((url) => {
+                const pathsToDelete = post.file_urls.map((url: any) => {
                     // userId/posts/filename.ext
                     return url.split("/").slice(-3).join("/");
                 });
@@ -921,7 +921,7 @@ export const deleteComment = [
             }
 
             if (comment.file_urls && comment.file_urls.length > 0) {
-                const pathsToDelete = comment.file_urls.map((url) => {
+                const pathsToDelete = comment.file_urls.map((url: any) => {
                     // userId/comments/filename.ext
                     return url.split("/").slice(-3).join("/");
                 });

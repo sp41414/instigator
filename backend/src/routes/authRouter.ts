@@ -5,8 +5,8 @@ import {
     logout,
     setupUsername,
     guestLogin,
-} from "../controllers/authController";
-import passport from "../config/passport";
+} from "../controllers/authController.js";
+import passport from "../config/passport.js";
 import jwt from "jsonwebtoken";
 
 const authRouter = Router();

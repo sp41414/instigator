@@ -1,15 +1,15 @@
 import { NextFunction, Response } from "express";
-import prisma from "../db/prisma";
+import prisma from "../db/prisma.js";
 import { validationResult, matchedData, body, query } from "express-validator";
-import { authenticateJWT } from "../middleware/auth";
-import { AuthenticatedRequest } from "../types";
+import { authenticateJWT } from "../middleware/auth.js";
+import { AuthenticatedRequest } from "../types/index.js";
 import bcrypt from "bcryptjs";
 import {
     validateUpdateUser,
     validatePaginationQuery,
     validateProfilePicture,
-} from "../middleware/validation";
-import { supabase } from "../config/supabase";
+} from "../middleware/validation.js";
+import { supabase } from "../config/supabase.js";
 
 export const getProfile = [
     authenticateJWT,
