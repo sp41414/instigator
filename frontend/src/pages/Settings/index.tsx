@@ -5,6 +5,7 @@ import { useLogout } from "../../hooks/auth/useLogout";
 import { useDeleteAccount } from "../../hooks/users/useDeleteAccount";
 import useTheme from "../../hooks/useTheme";
 import { Loader2, LogOut, Trash2, Moon, Sun, Monitor } from "lucide-react";
+import { useCheckAuth } from "../../hooks/auth/useCheckAuth";
 
 export default function SettingsPage() {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function SettingsPage() {
     const { deleteAccount, isLoading: isDeleting } = useDeleteAccount();
     const { theme, setTheme } = useTheme();
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const { state } = useCheckAuth();
 
     const handleLogout = async () => {
         try {
@@ -101,47 +103,51 @@ export default function SettingsPage() {
                         </button>
                     </div>
 
-                    <div className="border border-red-200 dark:border-red-900/50 rounded-xl p-6">
-                        <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-4">
-                            Danger Zone
-                        </h2>
-                        {!showDeleteConfirm ? (
-                            <button
-                                onClick={() => setShowDeleteConfirm(true)}
-                                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors cursor-pointer"
-                            >
-                                <Trash2 className="w-5 h-5" />
-                                Delete Account
-                            </button>
-                        ) : (
-                            <div className="space-y-3">
-                                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                    Are you sure you want to delete your account?
-                                    This action cannot be undone.
-                                </p>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setShowDeleteConfirm(false)}
-                                        className="flex-1 px-4 py-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700 cursor-pointer transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleDeleteAccount}
-                                        disabled={isDeleting}
-                                        className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 transition-colors"
-                                    >
-                                        {isDeleting ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        ) : (
-                                            <Trash2 className="w-4 h-4" />
-                                        )}
-                                        Delete
-                                    </button>
+                    {state.user?.id !== 1 && (
+                        <div className="border border-red-200 dark:border-red-900/50 rounded-xl p-6">
+                            <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-4">
+                                Danger Zone
+                            </h2>
+                            {!showDeleteConfirm ? (
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors cursor-pointer"
+                                >
+                                    <Trash2 className="w-5 h-5" />
+                                    Delete Account
+                                </button>
+                            ) : (
+                                <div className="space-y-3">
+                                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                        Are you sure you want to delete your
+                                        account? This action cannot be undone.
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() =>
+                                                setShowDeleteConfirm(false)
+                                            }
+                                            className="flex-1 px-4 py-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700 cursor-pointer transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleDeleteAccount}
+                                            disabled={isDeleting}
+                                            className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 transition-colors"
+                                        >
+                                            {isDeleting ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="w-4 h-4" />
+                                            )}
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
