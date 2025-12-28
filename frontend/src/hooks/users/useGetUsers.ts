@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
-import axios from "axios";
-import { API_URL } from "../auth/useAuth";
+import { api } from "../../utils/axios";
 import { parseErrorMessage } from "../../utils/parseError";
 
 export interface UserWithStatus {
@@ -48,10 +47,9 @@ export const useGetUsers = () => {
                     params.append("search", search);
                 }
 
-                const response = await axios.get(
-                    `${API_URL}/users?${params.toString()}`,
-                    { withCredentials: true },
-                );
+                const response = await api.get(`/users?${params.toString()}`, {
+                    withCredentials: true,
+                });
 
                 const data: GetUsersResponse = response.data?.data;
 
