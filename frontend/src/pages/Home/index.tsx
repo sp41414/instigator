@@ -216,11 +216,7 @@ export default function HomePage() {
                         )}
 
                         {feed?.posts.map((post) => (
-                            <Post
-                                key={post.id}
-                                post={post}
-                                currentUserId={state.user?.id}
-                            />
+                            <Post key={post.id} post={post} />
                         ))}
 
                         {isLoading && (

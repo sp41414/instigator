@@ -17,6 +17,7 @@ import FileModal from "./FileModal";
 import { useDeletePost } from "../hooks/posts/useDeletePost";
 import { useUpdatePost } from "../hooks/posts/useUpdatePost";
 import { useLikePost } from "../hooks/posts/useLikePost";
+import { useAuth } from "../hooks/auth/useAuth";
 
 interface PostProps {
     post: {
@@ -35,10 +36,12 @@ interface PostProps {
         };
         likes: { id: string }[];
     };
-    currentUserId?: number;
 }
 
-export default function Post({ post, currentUserId }: PostProps) {
+export default function Post({ post }: PostProps) {
+    const { state } = useAuth();
+    const currentUserId = state.user?.id;
+
     const [isLiked, setIsLiked] = useState(post.likes.length > 0);
     const [likeCount, setLikeCount] = useState(post._count.likes);
     const [showOptions, setShowOptions] = useState(false);

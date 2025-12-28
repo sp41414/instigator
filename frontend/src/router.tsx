@@ -4,6 +4,7 @@ import LoginPage from "./pages/Auth/LoginPage";
 import SignupPage from "./pages/Auth/SignupPage";
 import SetupUsernamePage from "./pages/Auth/SetupUsernamePage";
 import HomePage from "./pages/Home";
+import PostPage from "./pages/Posts";
 
 const router = createBrowserRouter([
     {
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
             },
             {
                 path: "posts/:id",
+                element: <PostPage />,
             },
             {
                 path: "comments/:id",
