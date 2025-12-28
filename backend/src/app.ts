@@ -16,9 +16,15 @@ app.use(
     cors({
         origin: [process.env.FRONTEND_URL as string, "http://localhost:5173"],
         credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+        exposedHeaders: ["Set-Cookie"],
     }),
 );
-app.use(helmet());
+app.use(
+    helmet({
+        crossOriginResourcePolicy: { policy: "cross-origin" },
+    }),
+);
 app.use(cookieParser(process.env.COOKIE_SECRET!));
 // app.use(
 //     rateLimit({
