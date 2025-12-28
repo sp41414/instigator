@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useGoogleLogin } from "../../hooks/auth/useGoogleLogin";
+// import { useGoogleLogin } from "../../hooks/auth/useGoogleLogin";
 import { useSignup } from "../../hooks/auth/useSignup";
 import { Link, useNavigate } from "react-router";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
@@ -22,7 +22,7 @@ export default function SignupPage() {
         confirmPassword: false,
     });
     const { signup, error, isLoading } = useSignup();
-    const { loginGoogle } = useGoogleLogin();
+    // const { loginGoogle } = useGoogleLogin();
     const navigate = useNavigate();
     const { state } = useCheckAuth();
     const { guestLogin } = useGuestLogin();
@@ -322,6 +322,7 @@ export default function SignupPage() {
                     </div>
                 </div>
 
+                {/*
                 <button
                     onClick={loginGoogle}
                     className="w-full py-3 bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-900 cursor-pointer dark:text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-3"
@@ -360,6 +361,7 @@ export default function SignupPage() {
                     </svg>
                     Continue with Google
                 </button>
+                */}
 
                 <button
                     onClick={handleGuestLogin}

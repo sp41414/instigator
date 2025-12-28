@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { parseErrorMessage } from "../../utils/parseError";
-import { api } from "../../utils/axios";
 import { useAuth } from "../auth/useAuth";
+import { api } from "../../utils/axios";
 
 export const useUpdateProfilePicture = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +16,12 @@ export const useUpdateProfilePicture = () => {
             const formData = new FormData();
             formData.append("file", file);
 
-            const response = await api.put(`/users/me/avatar`, formData);
+            const response = await api.put(`/users/me/avatar`, formData, {
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
 
             if (response.data.data.url) {
                 dispatch({
