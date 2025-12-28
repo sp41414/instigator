@@ -16,10 +16,12 @@ Instigator is a Full Stack Microblogging Social Media Website
 - **User Settings:** Settings with the ability to customize light/dark/system mode, logout, and delete the account
 
 <p align="center">
-  <img src="/resources/image1.png" width="22%" />
-  <img src="/resources/image2.png" width="22%" />
-  <img src="/resources/image3.png" width="22%" />
-  <img src="/resources/image4.png" width="22%" />
+  <img src="/resources/image1.png" width="50%" />
+  <img src="/resources/image2.png" width="50%" />
+</p>
+<p align="center">
+    <img src="/resources/image3.png" width="50%" />
+    <img src="/resources/image4.png" width="50%" />
 </p>
 
 ## Tech Stack
