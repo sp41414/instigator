@@ -37,6 +37,7 @@ authRouter.get(
             sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
             path: "/",
+            partitioned: process.env.NODE_ENV === "production",
         });
 
         res.redirect(303, process.env.FRONTEND_URL! + "/");

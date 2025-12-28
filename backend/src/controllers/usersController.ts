@@ -454,6 +454,7 @@ export const deleteUser = [
                 sameSite:
                     process.env.NODE_ENV === "production" ? "none" : "lax",
                 path: "/",
+                partitioned: process.env.NODE_ENV === "production",
             });
             return res.json({
                 success: true,

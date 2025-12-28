@@ -72,6 +72,7 @@ export const login = [
                         process.env.NODE_ENV === "production" ? "none" : "lax",
                     maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
                     path: "/",
+                    partitioned: process.env.NODE_ENV === "production",
                 });
 
                 return res.json({
@@ -159,6 +160,7 @@ export const signup = [
                     process.env.NODE_ENV === "production" ? "none" : "lax",
                 maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
                 path: "/",
+                partitioned: process.env.NODE_ENV === "production",
             });
 
             res.status(201).json({
@@ -180,6 +182,7 @@ export const logout = (req: Request, res: Response) => {
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         path: "/",
+        partitioned: process.env.NODE_ENV === "production",
     });
     res.json({
         success: true,
@@ -281,6 +284,7 @@ export const guestLogin = async (
             sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
             path: "/",
+            partitioned: process.env.NODE_ENV === "production",
         });
 
         return res.json({
