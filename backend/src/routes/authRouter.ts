@@ -39,7 +39,7 @@ authRouter.get(
             path: "/",
         });
 
-        res.redirect(`${process.env.FRONTEND_URL}/`);
+        res.status(302).location(process.env.FRONTEND_URL! + "/").end();
     },
 );
 
