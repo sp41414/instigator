@@ -70,6 +70,7 @@ export const login = [
                     secure: process.env.NODE_ENV === "production",
                     sameSite: "none",
                     maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
+                    path: "/",
                 });
 
                 return res.json({
@@ -155,6 +156,7 @@ export const signup = [
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "none",
                 maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
+                path: "/",
             });
 
             res.status(201).json({
@@ -275,6 +277,7 @@ export const guestLogin = async (
             secure: process.env.NODE_ENV === "production",
             sameSite: "none",
             maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
+            path: "/",
         });
 
         return res.json({
