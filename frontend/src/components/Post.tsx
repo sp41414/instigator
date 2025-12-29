@@ -195,7 +195,7 @@ export default function Post({ post }: PostProps) {
                     )}
                 </Link>
 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2 relative z-20 pointer-events-auto">
                             <Link
@@ -289,7 +289,7 @@ export default function Post({ post }: PostProps) {
                             </div>
                         ) : (
                             displayedText && (
-                                <p className="prose dark:prose-invert mb-3 whitespace-pre-wrap font-body">
+                                <p className="prose dark:prose-invert mb-3 whitespace-pre-wrap font-body wrap-break-word">
                                     {displayedText}
                                 </p>
                             )
@@ -405,4 +405,3 @@ export default function Post({ post }: PostProps) {
         </article>
     );
 }
-
