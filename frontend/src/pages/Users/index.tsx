@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Link } from "react-router";
 import NavBar from "../../components/NavBar";
-import { useGetUsers, type UserWithStatus } from "../../hooks/users/useGetUsers";
+import {
+    useGetUsers,
+    type UserWithStatus,
+} from "../../hooks/users/useGetUsers";
 import { useSendFollow } from "../../hooks/follows/useSendFollow";
 import { useBlockUser } from "../../hooks/follows/useBlockUser";
 import { useDeleteFollow } from "../../hooks/follows/useDeleteFollow";
@@ -238,7 +241,7 @@ export default function UsersPage() {
         <div className="flex min-h-screen w-full justify-center">
             <NavBar />
             <div className="flex-1 max-w-2xl border-x border-zinc-200 dark:border-zinc-800 min-h-screen pb-16 md:pb-0">
-                <div className="sticky top-0 z-10 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm border-b border-zinc-200 dark:border-zinc-800 p-4">
+                <div className="sticky top-0 z-10 bg-white/80 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 p-4">
                     <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
                         Users
                     </h1>

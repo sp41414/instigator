@@ -91,7 +91,7 @@ export default function NavBar() {
 
     return (
         <>
-            <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 z-10">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 z-30">
                 <nav className="flex justify-around items-center p-2">
                     {navItems.map((item) => {
                         active = isActive(item.path);

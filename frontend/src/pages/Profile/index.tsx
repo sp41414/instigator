@@ -144,7 +144,10 @@ export default function ProfilePage() {
 
     const handleFollowAction = async () => {
         if (!userId) return;
-        if (user?.followStatus?.status === "PENDING" && user.followStatus.senderId === state.user?.id) {
+        if (
+            user?.followStatus?.status === "PENDING" &&
+            user.followStatus.senderId === state.user?.id
+        ) {
             try {
                 await deleteFollow(user.followStatus.id);
                 getUser(userId);
@@ -306,7 +309,7 @@ export default function ProfilePage() {
         <div className="flex min-h-screen w-full justify-center">
             <NavBar />
             <div className="flex-1 max-w-2xl border-x border-zinc-200 dark:border-zinc-800 min-h-screen pb-16 md:pb-0">
-                <div className="sticky top-0 z-10 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm border-b border-zinc-200 dark:border-zinc-800 p-4">
+                <div className="sticky top-0 z-40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-lg border-b border-zinc-200 dark:border-zinc-800 p-4">
                     <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
                         Profile
                     </h1>
