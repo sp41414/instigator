@@ -88,7 +88,6 @@ export const getProfile = [
                 },
                 take: limit + 1,
                 ...(cursor && {
-                    skip: 1,
                     cursor: {
                         id: cursor,
                     },
@@ -240,7 +239,6 @@ export const getUserProfile = [
                 },
                 take: limit + 1,
                 ...(cursor && {
-                    skip: 1,
                     cursor: {
                         id: cursor,
                     },
@@ -584,7 +582,6 @@ export const getUsers = [
                 },
                 take: limit + 1,
                 ...(cursor && {
-                    skip: 1,
                     cursor: {
                         id: parseInt(cursor),
                     },

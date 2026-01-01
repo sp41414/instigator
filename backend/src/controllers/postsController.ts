@@ -184,7 +184,6 @@ export const getFeed = [
                 // cursor-based pagination
                 take: limit + 1,
                 ...(cursor && {
-                    skip: 1,
                     cursor: {
                         id: cursor,
                     },
@@ -325,7 +324,6 @@ export const getPost = [
                 },
                 take: limit + 1,
                 ...(cursor && {
-                    skip: 1,
                     cursor: {
                         id: cursor,
                     },
